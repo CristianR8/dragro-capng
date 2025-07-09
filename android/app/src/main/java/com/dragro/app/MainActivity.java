@@ -1,0 +1,5 @@
+package com.dragro.app;
+
+import com.getcapacitor.BridgeActivity;
+
+public class MainActivity extends BridgeActivity {}
