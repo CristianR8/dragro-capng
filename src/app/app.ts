@@ -6,6 +6,10 @@ import { HttpClientModule } from '@angular/common/http';
 import { HttpClient } from '@angular/common/http';
 import { SqliteService } from './services/sqlite.service';
 
+// Importar ng-Bootstrap
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+
+
 interface Departamento {
   id: number;
   name: string;
@@ -32,7 +36,13 @@ interface Usuario {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule, RouterOutlet],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    HttpClientModule, 
+    RouterOutlet,
+    NgbModule,
+  ],
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })
@@ -60,13 +70,18 @@ export class App implements OnInit {
   emailValid = false;
   emailErrorMessage = '';
 
+  // Alerta para mostrar mensajes
+  alertMessage = '';
+  alertType: 'success' | 'danger' | 'warning' | 'info' = 'info';
+  showAlert = false;
+
   profileOptions = [
-    { id: 'asistente',    label: 'Asistente técnico', description: 'Soporte especializado',       icon: 'fas fa-user-tie' },
-    { id: 'productor',    label: 'Productor',        description: 'Agricultor profesional',      icon: 'fas fa-seedling' },
-    { id: 'estudiante',   label: 'Estudiante',       description: 'En formación académica',      icon: 'fas fa-graduation-cap' },
-    { id: 'investigador', label: 'Investigador',     description: 'Desarrollo científico',       icon: 'fas fa-microscope' },
-    { id: 'docente',      label: 'Docente',          description: 'Educador especializado',      icon: 'fas fa-chalkboard-teacher' },
-    { id: 'general',      label: 'Público en general', description: 'Interés general',           icon: 'fas fa-users' }
+    { id: 'asistente',    label: 'Asistente técnico', description: 'Soporte especializado',       icon: 'bi bi-person-badge' },
+    { id: 'productor',    label: 'Productor',        description: 'Agricultor profesional',      icon: 'bi bi-tree' },
+    { id: 'estudiante',   label: 'Estudiante',       description: 'En formación académica',      icon: 'bi bi-mortarboard' },
+    { id: 'investigador', label: 'Investigador',     description: 'Desarrollo científico',       icon: 'bi bi-search' },
+    { id: 'docente',      label: 'Docente',          description: 'Educador especializado',      icon: 'bi bi-easel' },
+    { id: 'general',      label: 'Público en general', description: 'Interés general',           icon: 'bi bi-people' }
   ];
 
   constructor(
@@ -254,13 +269,28 @@ export class App implements OnInit {
     );
   }
 
+  private showAlertMessage(message: string, type: 'success' | 'danger' | 'warning' | 'info' = 'info') {
+    this.alertMessage = message;
+    this.alertType = type;
+    this.showAlert = true;
+    
+    // Auto-hide alert after 5 seconds
+    setTimeout(() => {
+      this.showAlert = false;
+    }, 5000);
+  }
+
+  closeAlert() {
+    this.showAlert = false;
+  }
+
   async guardarInformacion() {
     if (!this.isFormValid()) {
-      alert('Complete todos los campos correctamente antes de guardar.');
+      this.showAlertMessage('Complete todos los campos correctamente antes de guardar.', 'warning');
       return;
     }
     if (!this.selectedDepartamento || !this.selectedMunicipio) {
-      alert('Seleccione departamento y municipio válidos.');
+      this.showAlertMessage('Seleccione departamento y municipio válidos.', 'warning');
       return;
     }
     const datosCompletos: Usuario = {
@@ -275,10 +305,10 @@ export class App implements OnInit {
     try {
       const res = await this.sqliteService.addUsuario(datosCompletos);
       console.log('Filas insertadas:', res.changes?.changes);
-      alert('Información guardada correctamente!');
+      this.showAlertMessage('Información guardada correctamente!', 'success');
     } catch (err) {
       console.error('Error al guardar/consultar en SQLite:', err);
-      alert('Error al guardar la información. Revise la consola.');
+      this.showAlertMessage('Error al guardar la información. Revise la consola.', 'danger');
     }
   }
 
