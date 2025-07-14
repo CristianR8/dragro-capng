@@ -10,6 +10,7 @@ import { SqliteService } from './services/sqlite.service';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 
+
 interface Departamento {
   id: number;
   name: string;
