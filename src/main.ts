@@ -1,14 +1,16 @@
+// main.ts
+import 'zone.js';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { provideHttpClient }    from '@angular/common/http';
-import { importProvidersFrom }  from '@angular/core';
-import { FormsModule }          from '@angular/forms';
-import { HttpClientModule }     from '@angular/common/http';
+import { importProvidersFrom } from '@angular/core';
+import { AppComponent } from './app/app';           
+import { HttpClientModule } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 
-import { App }                  from './app/app';
+console.log('► main.ts ejecutado con Zone.js'); 
 
-bootstrapApplication(App, {
+bootstrapApplication(AppComponent, {
   providers: [
-    provideHttpClient(),                     // ← registers HttpClient
-    importProvidersFrom([FormsModule, HttpClientModule])
+    importProvidersFrom(HttpClientModule, FormsModule)
   ]
-}).catch(err => console.error(err));
+})
+.catch(err => console.error(err));

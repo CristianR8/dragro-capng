@@ -1,219 +1,184 @@
-<!-- app.html con ng-Bootstrap -->
-<div class="min-vh-100 bg-light">
-  <!-- Header -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+<!-- app.component.html -->
+<header class="bg-white shadow-sm">
+  <nav class="navbar navbar-light">
     <div class="container">
-      <div class="navbar-brand mx-auto">
-        <img
-          src="images/menu.png"
-          alt="Dr. Agro"
-          style="max-height: 40px;"
-          class="d-block mx-auto"
-        />
-      </div>
+      <img
+        src="images/menu.png"
+        class="mx-auto d-block"
+        style="max-height: 40px; padding: 10px"
+        alt="Dr. Agro"
+      />
     </div>
   </nav>
+</header>
 
-  <!-- Main Content -->
-  <div class="container py-4">
+<main class="py-4">
+  <div class="container">
     <!-- Logo -->
     <div class="text-center mb-4">
       <img
         src="images/Logotipo-DR-AGRO-Color.png"
         alt="Dr. Agro"
         class="img-fluid"
-        style="max-height: 200px;"
+        style="max-height: 200px"
       />
     </div>
 
     <!-- Título -->
     <div class="text-center mb-4">
-      <h4 class="fw-bold text-primary mb-2">PERFIL DE USUARIO</h4>
-      <p class="text-muted">Por favor selecciona la opción que mejor se ajuste a tu perfil</p>
+      <h4 class="fw-bold mb-2">PERFIL DE USUARIO</h4>
+      <p class="text-muted small">
+        Por favor selecciona la opción que mejor se ajuste a tu perfil
+      </p>
     </div>
 
-    <!-- Alert Messages -->
-    <ngb-alert 
-      *ngIf="showAlert" 
-      [type]="alertType" 
-      [dismissible]="true"
-      (closed)="closeAlert()"
-      class="mb-4">
-      {{ alertMessage }}
-    </ngb-alert>
-
-    <!-- Formulario -->
-    <div class="row justify-content-center">
-      <div class="col-lg-8">
-        <form>
-          <!-- Opciones de Perfil -->
-          <div class="mb-4">
-            <h5 class="mb-3">Selecciona tu perfil</h5>
-            <div class="row g-3">
-              <div *ngFor="let opt of profileOptions" class="col-6 col-md-4">
-                <div class="card h-100 profile-card" 
-                     [class.border-primary]="perfilSeleccionado === opt.id"
-                     [class.bg-primary]="perfilSeleccionado === opt.id"
-                     [class.text-white]="perfilSeleccionado === opt.id"
-                     (click)="selectProfile(opt.id)"
-                     style="cursor: pointer; transition: all 0.3s;">
-                  <div class="card-body text-center p-3">
-                    <i [class]="opt.icon" class="fs-1 mb-2" 
-                       [class.text-primary]="perfilSeleccionado !== opt.id"
-                       [class.text-white]="perfilSeleccionado === opt.id"></i>
-                    <h6 class="card-title mb-1">{{ opt.label }}</h6>
-                    <small [class.text-muted]="perfilSeleccionado !== opt.id"
-                           [class.text-white-50]="perfilSeleccionado === opt.id">
-                      {{ opt.description }}
-                    </small>
-                  </div>
-                </div>
+    <form>
+      <!-- Opciones de Perfil -->
+      <div class="row g-3 mb-4">
+        <div *ngFor="let opt of profileOptions" class="col-6 col-md-4">
+          <div
+            class="card h-100 text-center profile-card"
+            [class.selected]="perfilSeleccionado === opt.id"
+            (click)="selectProfile(opt.id)"
+            role="button"
+          >
+            <div
+              class="card-body d-flex flex-column justify-content-center p-3"
+            >
+              <div class="icon-wrapper mb-3">
+                <i [class]="opt.icon + ' fa-3x'"></i>
               </div>
+              <h6 class="card-title mb-1">{{ opt.label }}</h6>
+              <small class="text-muted">{{ opt.description }}</small>
             </div>
           </div>
+        </div>
+      </div>
 
-          <!-- Departamento -->
-          <div class="mb-3">
-            <label for="departamento" class="form-label">
-              Departamento <span class="text-danger">*</span>
-            </label>
-            <div class="position-relative" ngbDropdown>
-              <input
-                id="departamento"
-                name="departamento"
-                type="text"
-                class="form-control"
-                [(ngModel)]="departamentoText"
-                (input)="filterDepartamentos($event)"
-                (focus)="showDepartamentos = true"
-                (blur)="hideDepartamentosDropdown()"
-                placeholder="Escriba o seleccione un departamento"
-                autocomplete="off"
-                [class.is-invalid]="departamentoInvalid"
-                [class.is-valid]="departamentoValid"
-                #departamentoInput
-              />
-              
-              <div class="dropdown-menu w-100" 
-                   [class.show]="showDepartamentos && filteredDepartamentos.length > 0"
-                   style="max-height: 300px; overflow-y: auto;">
-                <button
-                  type="button"
-                  class="dropdown-item"
-                  *ngFor="let dept of filteredDepartamentos"
-                  (mousedown)="selectDepartamento(dept)"
-                >
-                  <i class="bi bi-geo-alt me-2"></i>
-                  {{ dept.name }}
-                </button>
-              </div>
-              
-              <div class="invalid-feedback" *ngIf="departamentoInvalid">
-                <i class="bi bi-exclamation-triangle me-1"></i>
-                Por favor seleccione un departamento válido de Colombia.
-              </div>
-            </div>
-          </div>
-
-          <!-- Municipio -->
-          <div class="mb-3">
-            <label for="municipio" class="form-label">
-              Municipio <span class="text-danger">*</span>
-            </label>
-            <div class="position-relative" ngbDropdown>
-              <input
-                id="municipio"
-                name="municipio"
-                type="text"
-                class="form-control"
-                [(ngModel)]="municipioText"
-                (input)="filterMunicipios($event)"
-                (focus)="showMunicipios = true"
-                (blur)="hideMunicipiosDropdown()"
-                placeholder="Escriba o seleccione un municipio"
-                autocomplete="off"
-                [disabled]="!selectedDepartamento"
-                [class.is-invalid]="municipioInvalid"
-                [class.is-valid]="municipioValid"
-                #municipioInput
-              />
-              
-              <div class="dropdown-menu w-100"
-                   [class.show]="showMunicipios && filteredMunicipios.length > 0"
-                   style="max-height: 300px; overflow-y: auto;">
-                <button
-                  type="button"
-                  class="dropdown-item"
-                  *ngFor="let mun of filteredMunicipios"
-                  (mousedown)="selectMunicipio(mun)"
-                >
-                  <i class="bi bi-building me-2"></i>
-                  {{ mun.name }}
-                </button>
-              </div>
-              
-              <div class="invalid-feedback" *ngIf="municipioInvalid">
-                <i class="bi bi-exclamation-triangle me-1"></i>
-                Por favor seleccione un municipio válido del departamento seleccionado.
-              </div>
-              
-              <div class="form-text" *ngIf="!selectedDepartamento">
-                <i class="bi bi-info-circle me-1"></i>
-                Primero debe seleccionar un departamento
-              </div>
-            </div>
-          </div>
-
-          <!-- Correo electrónico -->
-          <div class="mb-4">
-            <label for="correo" class="form-label">
-              Correo electrónico <span class="text-danger">*</span>
-            </label>
-            <div class="input-group">
-              <span class="input-group-text">
-                <i class="bi bi-envelope"></i>
-              </span>
-              <input
-                id="correo"
-                name="correo"
-                type="email"
-                class="form-control"
-                [(ngModel)]="usuario.correo"
-                (input)="validateEmail()"
-                (blur)="validateEmail()"
-                placeholder="ejemplo@correo.com"
-                [class.is-invalid]="emailInvalid"
-                [class.is-valid]="emailValid"
-                maxlength="100"
-              />
-            </div>
-            
-            <div class="invalid-feedback d-block" *ngIf="emailInvalid">
-              <i class="bi bi-exclamation-triangle me-1"></i>
-              {{ emailErrorMessage }}
-            </div>
-            
-            <div class="form-text" *ngIf="!emailInvalid && !emailValid">
-              <i class="bi bi-info-circle me-1"></i>
-              Ingrese un correo electrónico válido
-            </div>
-          </div>
-
-          <!-- Botón Guardar -->
-          <div class="d-grid gap-2">
+      <!-- Departamento -->
+      <div class="mb-3 position-relative">
+        <label for="departamento" class="form-label">
+          Departamento <span class="text-danger">*</span>
+        </label>
+        <input
+          id="departamento"
+          name="departamento"
+          type="text"
+          class="form-control"
+          [(ngModel)]="departamentoText"
+          (input)="filterDepartamentos($event)"
+          (focus)="showDepartamentosDropdown()"
+          (blur)="hideDepartamentosDropdown()"
+          placeholder="Escriba o seleccione un departamento"
+          autocomplete="off"
+          [class.is-invalid]="departamentoInvalid && departamentoText"
+          [class.is-valid]="departamentoValid"
+        />
+        <ul
+          class="dropdown-menu dropdown-menu-custom"
+          [class.show]="showDepartamentos && filteredDepartamentos.length > 0"
+        >
+          <li *ngFor="let dept of filteredDepartamentos">
             <button
               type="button"
-              class="btn btn-success btn-lg"
-              [disabled]="!isFormValid()"
-              (click)="guardarInformacion()"
+              class="dropdown-item"
+              (click)="selectDepartamento(dept)"
             >
-              <i class="bi bi-check-circle me-2"></i>
-              Guardar información
+              {{ dept.name }}
             </button>
-          </div>
-        </form>
+          </li>
+        </ul>
+        <div
+          class="invalid-feedback"
+          *ngIf="departamentoInvalid && departamentoText"
+        >
+          Por favor seleccione un departamento válido de Colombia.
+        </div>
       </div>
-    </div>
+
+      <!-- Municipio -->
+      <div class="mb-3 position-relative">
+        <label for="municipio" class="form-label">
+          Municipio <span class="text-danger">*</span>
+        </label>
+        <input
+          id="municipio"
+          name="municipio"
+          type="text"
+          class="form-control"
+          [(ngModel)]="municipioText"
+          (input)="filterMunicipios($event)"
+          (focus)="showMunicipiosDropdown()"
+          (blur)="hideMunicipiosDropdown()"
+          placeholder="Escriba o seleccione un municipio"
+          autocomplete="off"
+          [disabled]="!selectedDepartamento"
+          [class.is-invalid]="municipioInvalid && municipioText"
+          [class.is-valid]="municipioValid"
+        />
+        <ul
+          class="dropdown-menu dropdown-menu-custom"
+          [class.show]="showMunicipios && filteredMunicipios.length > 0"
+        >
+          <li *ngFor="let mun of filteredMunicipios">
+            <button
+              type="button"
+              class="dropdown-item"
+              (mousedown)="selectMunicipio(mun)"
+            >
+              {{ mun.name }}
+            </button>
+          </li>
+        </ul>
+        <div class="invalid-feedback" *ngIf="municipioInvalid && municipioText">
+          Por favor seleccione un municipio válido del departamento
+          seleccionado.
+        </div>
+        <small class="form-text text-muted" *ngIf="!selectedDepartamento">
+          Primero debe seleccionar un departamento
+        </small>
+      </div>
+
+      <!-- Correo electrónico -->
+      <div class="mb-4">
+        <label for="correo" class="form-label">
+          Correo electrónico <span class="text-danger">*</span>
+        </label>
+        <input
+          id="correo"
+          name="correo"
+          type="email"
+          class="form-control"
+          [(ngModel)]="usuario.correo"
+          (input)="validateEmail()"
+          (blur)="validateEmail()"
+          placeholder="ejemplo@correo.com"
+          [class.is-invalid]="emailInvalid"
+          [class.is-valid]="emailValid"
+          maxlength="100"
+        />
+        <div class="invalid-feedback" *ngIf="emailInvalid">
+          {{ emailErrorMessage }}
+        </div>
+        <small
+          class="form-text text-muted"
+          *ngIf="!emailInvalid && !emailValid && !usuario.correo"
+        >
+          Ingrese un correo electrónico válido
+        </small>
+      </div>
+
+      <!-- Botón Guardar -->
+      <button
+        type="button"
+        class="btn btn-success w-100 btn-lg mb-4"
+        [disabled]="!isFormValid()"
+        (click)="guardarInformacion()"
+      >
+        <i class="fas fa-save me-2"></i>
+        Guardar información
+      </button>
+    </form>
 
     <!-- Footer -->
     <div class="text-center mt-5">
@@ -221,8 +186,8 @@
         src="images/agrosavia_color.png"
         alt="Agrosavia"
         class="img-fluid"
-        style="max-height: 30px;"
+        style="max-height: 40px"
       />
     </div>
   </div>
-</div>
+</main>

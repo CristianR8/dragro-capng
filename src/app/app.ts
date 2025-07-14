@@ -6,9 +6,6 @@ import { HttpClientModule } from '@angular/common/http';
 import { HttpClient } from '@angular/common/http';
 import { SqliteService } from './services/sqlite.service';
 
-// Importar ng-Bootstrap
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-
 
 interface Departamento {
   id: number;
@@ -36,19 +33,21 @@ interface Usuario {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [
-    CommonModule, 
-    FormsModule, 
-    HttpClientModule, 
-    RouterOutlet,
-    NgbModule,
-  ],
+  imports: [CommonModule, FormsModule, HttpClientModule, RouterOutlet],
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })
-export class App implements OnInit {
+export class AppComponent implements OnInit {
+  testClick() {
+    console.log('✅ testClick disparado');
+  }
   perfilSeleccionado = '';
-  usuario: Partial<Usuario> = { departamento: '', municipio: '', correo: '' };
+  usuario: Partial<Usuario> = {
+    perfil: '',
+    departamento: '',
+    municipio: '',
+    correo: ''
+  };
 
   departamentos: Departamento[] = [];
   municipios: Municipio[] = [];
@@ -70,29 +69,23 @@ export class App implements OnInit {
   emailValid = false;
   emailErrorMessage = '';
 
-  // Alerta para mostrar mensajes
-  alertMessage = '';
-  alertType: 'success' | 'danger' | 'warning' | 'info' = 'info';
-  showAlert = false;
-
   profileOptions = [
-    { id: 'asistente',    label: 'Asistente técnico', description: 'Soporte especializado',       icon: 'bi bi-person-badge' },
-    { id: 'productor',    label: 'Productor',        description: 'Agricultor profesional',      icon: 'bi bi-tree' },
-    { id: 'estudiante',   label: 'Estudiante',       description: 'En formación académica',      icon: 'bi bi-mortarboard' },
-    { id: 'investigador', label: 'Investigador',     description: 'Desarrollo científico',       icon: 'bi bi-search' },
-    { id: 'docente',      label: 'Docente',          description: 'Educador especializado',      icon: 'bi bi-easel' },
-    { id: 'general',      label: 'Público en general', description: 'Interés general',           icon: 'bi bi-people' }
+    { id: 'asistente',    label: 'Asistente técnico', description: 'Soporte especializado',       icon: 'fas fa-user-tie' },
+    { id: 'productor',    label: 'Productor',        description: 'Agricultor profesional',      icon: 'fas fa-seedling' },
+    { id: 'estudiante',   label: 'Estudiante',       description: 'En formación académica',      icon: 'fas fa-graduation-cap' },
+    { id: 'investigador', label: 'Investigador',     description: 'Desarrollo científico',       icon: 'fas fa-microscope' },
+    { id: 'docente',      label: 'Docente',          description: 'Educador especializado',      icon: 'fas fa-chalkboard-teacher' },
+    { id: 'general',      label: 'Público en general', description: 'Interés general',           icon: 'fas fa-users' }
   ];
 
   constructor(
     private http: HttpClient,
     private sqliteService: SqliteService
-  ) {}
+  ) {console.log('🛠 AppComponent constructor');}
 
   async ngOnInit() {
     try {
       await this.sqliteService.initialize();
-      console.log('SQLite inicializada correctamente');
     } catch (err) {
       console.error('No se pudo inicializar SQLite:', err);
     }
@@ -133,9 +126,14 @@ export class App implements OnInit {
     const query = event.target.value.trim().toLowerCase();
     this.departamentoText = event.target.value;
     if (!query) {
-      this.resetDepartamentoFilter();
+      this.filteredDepartamentos = [...this.departamentos];
+      this.selectedDepartamento = null;
+      this.clearMunicipios();
+      this.validateDepartamento();
+      this.showDepartamentos = true;
       return;
     }
+
     this.filteredDepartamentos = this.departamentos.filter(d =>
       d.name.toLowerCase().includes(query)
     );
@@ -146,6 +144,7 @@ export class App implements OnInit {
       this.selectedDepartamento = null;
       this.clearMunicipios();
     }
+
     this.validateDepartamento();
     this.showDepartamentos = true;
   }
@@ -154,6 +153,7 @@ export class App implements OnInit {
     this.selectedDepartamento = dept;
     this.departamentoText = dept.name;
     this.usuario.departamento = dept.name;
+    this.usuario.departamentoId = dept.id;
     this.showDepartamentos = false;
     this.loadMunicipios(dept.id);
     this.clearMunicipios();
@@ -163,17 +163,28 @@ export class App implements OnInit {
   filterMunicipios(event: any) {
     const query = event.target.value.trim().toLowerCase();
     this.municipioText = event.target.value;
+
     if (!this.selectedDepartamento) return;
+
     if (!query) {
-      this.resetMunicipioFilter();
+      this.filteredMunicipios = [...this.municipios];
+      this.selectedMunicipio = null;
+      this.validateMunicipio();
+      this.showMunicipios = true;
       return;
     }
+
     this.filteredMunicipios = this.municipios.filter(m =>
       m.name.toLowerCase().includes(query)
     );
+
     const exact = this.municipios.find(m => m.name.toLowerCase() === query);
-    if (exact) this.selectMunicipio(exact);
-    else this.selectedMunicipio = null;
+    if (exact) {
+      this.selectMunicipio(exact);
+    } else {
+      this.selectedMunicipio = null;
+    }
+
     this.validateMunicipio();
     this.showMunicipios = true;
   }
@@ -182,6 +193,7 @@ export class App implements OnInit {
     this.selectedMunicipio = mun;
     this.municipioText = mun.name;
     this.usuario.municipio = mun.name;
+    this.usuario.municipioId = mun.id;
     this.showMunicipios = false;
     this.validateMunicipio();
   }
@@ -191,7 +203,8 @@ export class App implements OnInit {
     this.usuario.municipio = '';
     this.selectedMunicipio = null;
     this.filteredMunicipios = [];
-    this.validateMunicipio();
+    this.municipioValid = false;
+    this.municipioInvalid = false;
   }
 
   private resetDepartamentoFilter() {
@@ -208,29 +221,62 @@ export class App implements OnInit {
   }
 
   hideDepartamentosDropdown() {
-    setTimeout(() => this.showDepartamentos = false, 200);
+    setTimeout(() => {
+      this.showDepartamentos = false;
+    }, 200);
   }
 
   hideMunicipiosDropdown() {
-    setTimeout(() => this.showMunicipios = false, 200);
+    setTimeout(() => {
+      this.showMunicipios = false;
+    }, 200);
+  }
+
+  // Método para mostrar dropdown cuando se hace focus
+  showDepartamentosDropdown() {
+    if (this.departamentos.length > 0) {
+      this.filteredDepartamentos = [...this.departamentos];
+      this.showDepartamentos = true;
+    }
+  }
+
+  showMunicipiosDropdown() {
+    if (this.selectedDepartamento && this.municipios.length > 0) {
+      this.filteredMunicipios = [...this.municipios];
+      this.showMunicipios = true;
+    }
   }
 
   validateDepartamento() {
+    if (!this.departamentoText.trim()) {
+      this.departamentoValid = false;
+      this.departamentoInvalid = false;
+      return;
+    }
+
     const valid = !!(
       this.selectedDepartamento &&
       this.selectedDepartamento.name.toLowerCase() === this.departamentoText.trim().toLowerCase()
     );
+
     this.departamentoValid = valid;
-    this.departamentoInvalid = !valid;
+    this.departamentoInvalid = this.departamentoText.trim().length > 0 && !valid;
   }
 
   validateMunicipio() {
+    if (!this.municipioText.trim()) {
+      this.municipioValid = false;
+      this.municipioInvalid = false;
+      return;
+    }
+
     const valid = !!(
       this.selectedMunicipio &&
       this.selectedMunicipio.name.toLowerCase() === this.municipioText.trim().toLowerCase()
     );
+
     this.municipioValid = valid;
-    this.municipioInvalid = !valid;
+    this.municipioInvalid = this.municipioText.trim().length > 0 && !valid;
   }
 
   validateEmail() {
@@ -240,11 +286,26 @@ export class App implements OnInit {
       this.emailErrorMessage = '';
       return;
     }
+
     const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (email.length < 5) { this.setEmailError('El correo debe tener al menos 5 caracteres.'); return; }
-    if (email.length > 100) { this.setEmailError('El correo no puede tener más de 100 caracteres.'); return; }
-    if (email.includes(' ')) { this.setEmailError('El correo no puede contener espacios.'); return; }
-    if (!regex.test(email)) { this.setEmailError('Formato de correo inválido.'); return; }
+
+    if (email.length < 5) {
+      this.setEmailError('El correo debe tener al menos 5 caracteres.');
+      return;
+    }
+    if (email.length > 100) {
+      this.setEmailError('El correo no puede tener más de 100 caracteres.');
+      return;
+    }
+    if (email.includes(' ')) {
+      this.setEmailError('El correo no puede contener espacios.');
+      return;
+    }
+    if (!regex.test(email)) {
+      this.setEmailError('Formato de correo inválido.');
+      return;
+    }
+
     this.emailValid = true;
     this.emailInvalid = false;
     this.emailErrorMessage = '';
@@ -258,6 +319,7 @@ export class App implements OnInit {
 
   selectProfile(id: string) {
     this.perfilSeleccionado = id;
+    this.usuario.perfil = id;
   }
 
   isFormValid(): boolean {
@@ -269,46 +331,40 @@ export class App implements OnInit {
     );
   }
 
-  private showAlertMessage(message: string, type: 'success' | 'danger' | 'warning' | 'info' = 'info') {
-    this.alertMessage = message;
-    this.alertType = type;
-    this.showAlert = true;
-    
-    // Auto-hide alert after 5 seconds
-    setTimeout(() => {
-      this.showAlert = false;
-    }, 5000);
-  }
-
-  closeAlert() {
-    this.showAlert = false;
-  }
-
   async guardarInformacion() {
     if (!this.isFormValid()) {
-      this.showAlertMessage('Complete todos los campos correctamente antes de guardar.', 'warning');
+      alert('Complete todos los campos correctamente antes de guardar.');
       return;
     }
+
     if (!this.selectedDepartamento || !this.selectedMunicipio) {
-      this.showAlertMessage('Seleccione departamento y municipio válidos.', 'warning');
+      alert('Seleccione departamento y municipio válidos.');
       return;
     }
+    const correo = (this.usuario.correo || '').trim().toLowerCase();
     const datosCompletos: Usuario = {
       perfil: this.perfilSeleccionado,
       departamento: this.selectedDepartamento.name,
       departamentoId: this.selectedDepartamento.id,
       municipio: this.selectedMunicipio.name,
       municipioId: this.selectedMunicipio.id,
-      correo: (this.usuario.correo || '').trim().toLowerCase()
+      correo
     };
-    console.log('Datos a guardar:', datosCompletos);
+
     try {
+      const { values } = await this.sqliteService.findUsuarioByCorreo(correo);
+      if ((values ?? []).length > 0) {
+        alert(`Ya existe un usuario registrado con el correo ${correo}.`);
+        return;
+      }
       const res = await this.sqliteService.addUsuario(datosCompletos);
       console.log('Filas insertadas:', res.changes?.changes);
-      this.showAlertMessage('Información guardada correctamente!', 'success');
+      const { values: listado } = await this.sqliteService.getUsuarios();
+      console.log('Usuarios en BD:', listado);
+      alert('Información guardada correctamente!');
     } catch (err) {
       console.error('Error al guardar/consultar en SQLite:', err);
-      this.showAlertMessage('Error al guardar la información. Revise la consola.', 'danger');
+      alert('Error al guardar la información. Revise la consola.');
     }
   }
 
@@ -339,14 +395,14 @@ export class App implements OnInit {
       { id: 23, name: 'Putumayo', description: 'Departamento del Putumayo' },
       { id: 24, name: 'Quindío', description: 'Departamento del Quindío' },
       { id: 25, name: 'Risaralda', description: 'Departamento de Risaralda' },
-      { id: 26, name: 'San Andrés y Providencia', description: 'Departamento de San Andrés y Providencia' },
+      { id: 26, name:'San Andrés y Providencia', description: 'Departamento de San Andrés y Providencia' },
       { id: 27, name: 'Santander', description: 'Departamento de Santander' },
       { id: 28, name: 'Sucre', description: 'Departamento de Sucre' },
       { id: 29, name: 'Tolima', description: 'Departamento del Tolima' },
       { id: 30, name: 'Valle del Cauca', description: 'Departamento del Valle del Cauca' },
       { id: 31, name: 'Vaupés', description: 'Departamento del Vaupés' },
-      { id: 32, name: 'Vichada', description: 'Departamento del Vichada'}];
-      this.filteredDepartamentos = [...this.departamentos];
-      console.log("Departamentos fallback cargados correctamente", this.departamentos.length);
+      { id: 32, name: 'Vichada', description: 'Departamento del Vichada'}
+    ];
+    this.filteredDepartamentos = [...this.departamentos];
   }
 }
