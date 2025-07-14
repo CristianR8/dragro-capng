@@ -1,0 +1,7 @@
+img {
+  border-radius: 8px;
+}
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  filter: invert(1); /* Blanco → Negro, Negro → Blanco */
+}

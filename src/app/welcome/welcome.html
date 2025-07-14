@@ -1,1 +1,58 @@
-<p>welcome works!</p>
+<div class="min-vh-100 bg-light">
+  <!-- Encabezado -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container justify-content-between">
+      <img src="images/menu.png" alt="Menú" style="height: 24px;" />
+      <span class="navbar-brand fw-bold">Dr. Agro</span>
+      <i class="bi bi-search text-white fs-5"></i>
+    </div>
+  </nav>
+
+  <!-- Imagen principal -->
+  <div class="overflow-hidden">
+    <div class="position-relative">
+      <img src="images/paisaje.png" class="img-fluid w-100" style="max-height: 250px; object-fit: cover;" />
+      <div class="position-absolute top-50 start-50 translate-middle text-center text-white">
+        <h4 class="fw-bold">Bienvenidos a <span class="text-white">Dr. Agro</span></h4>
+        <p>Simplifica tu gestión de cultivos</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección: Cultivos -->
+  <div class="container my-4">
+    <h5 class="fw-bold">Cultivos</h5>
+    <p class="text-muted">Selecciona el cultivo de tu interés.</p>
+
+    <div id="carouselCultivos" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-inner text-center">
+        <div class="carousel-item active">
+          <img src="images/cacao.png" class="d-block mx-auto rounded shadow-sm" style="height: 120px;" alt="Cacao">
+          <p class="mt-2">Cacao</p>
+        </div>
+        <div class="carousel-item">
+          <img src="images/aguacate.png" class="d-block mx-auto rounded shadow-sm" style="height: 120px;" alt="Aguacate">
+          <p class="mt-2">Aguacate</p>
+        </div>
+        <div class="carousel-item">
+          <img src="images/cafe.png" class="d-block mx-auto rounded shadow-sm" style="height: 120px;" alt="Café">
+          <p class="mt-2">Café</p>
+        </div>
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#carouselCultivos" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#carouselCultivos" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+      </button>
+    </div>
+
+    <!-- Sección: Enfermedades -->
+    <h5 class="fw-bold mt-4">Enfermedades y Plagas</h5>
+    <div class="row">
+      <div class="col-4 mb-2" *ngFor="let enfermedad of enfermedades">
+        <div class="bg-white rounded shadow-sm p-3 text-center">{{ enfermedad }}</div>
+      </div>
+    </div>
+  </div>
+</div>
