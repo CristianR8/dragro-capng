@@ -1,0 +1,55 @@
+<div class="intro-slider-container">
+  <div id="introCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+    <!-- Indicadores -->
+    <div class="carousel-indicators">
+      <button 
+        type="button" 
+        data-bs-target="#introCarousel" 
+        [attr.data-bs-slide-to]="i"
+        [class.active]="i === 0"
+        *ngFor="let slide of slides; let i = index">
+      </button>
+    </div>
+
+    <!-- Slides -->
+    <div class="carousel-inner">
+      <div 
+        class="carousel-item" 
+        [class.active]="i === 0"
+        *ngFor="let slide of slides; let i = index">
+        
+        <div class="slide-content">
+          <!-- Imagen principal -->
+          <div class="image-container">
+            <img 
+              [src]="slide.imagePath" 
+              [alt]="slide.title"
+              class="slide-image">
+          </div>
+
+          <!-- Texto principal -->
+          <div class="text-content">
+            <h2>{{ slide.title }}</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controles opcionales (puedes comentarlos si no los quieres) -->
+    <!--
+    <button class="carousel-control-prev" type="button" data-bs-target="#introCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#introCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon"></span>
+    </button>
+    -->
+  </div>
+
+  <!-- Botón para continuar -->
+  <div class="continue-button">
+    <button type="button" class="btn btn-light btn-lg" (click)="onContinue()">
+      Continuar
+    </button>
+  </div>
+</div>
