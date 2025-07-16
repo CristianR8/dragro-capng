@@ -1,59 +1,39 @@
-<div class="d-flex flex-column vh-100 bg-success position-relative">
-  <!-- Botón cerrar (solo visible en el último slide) -->
-  <div class="position-absolute top-0 end-0 p-3" style="z-index: 1000;" *ngIf="currentSlide === slides.length - 1">
-    <button class="btn btn-light btn-sm px-3 rounded-pill" (click)="onContinue()">
-      Cerrar
-    </button>
-  </div>
+<div class="intro-slider-container">
+  <div id="introCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
 
-  <!-- Carousel -->
-  <div id="introCarousel" class="carousel slide h-100" data-bs-ride="carousel">
-    <div class="carousel-inner h-100">
+    <!-- Slides -->
+    <div class="carousel-inner">
       <div 
-        class="carousel-item h-100"
-        [class.active]="i === currentSlide"
+        class="carousel-item" 
+        [class.active]="i === 0"
         *ngFor="let slide of slides; let i = index">
         
-        <div class="d-flex flex-column h-100 justify-content-center align-items-center px-4">
+        <div class="slide-content">
           <!-- Imagen principal -->
-          <div class="text-center mb-4">
+          <div class="image-container">
             <img 
               [src]="slide.imagePath" 
               [alt]="slide.title"
-              class="img-fluid rounded-4"
-              style="max-height: 280px; max-width: 280px; object-fit: contain;">
+              class="slide-image">
           </div>
 
           <!-- Texto principal -->
-          <div class="text-center">
-            <h2 class="text-white fw-semibold lh-sm mb-0 px-3" style="font-size: 1.4rem; max-width: 320px;">
-              {{ slide.title }}
-            </h2>
+          <div class="text-content">
+            <h2>{{ slide.title }}</h2>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Indicadores personalizados -->
-  <div class="position-absolute bottom-0 start-50 translate-middle-x pb-4">
-    <div class="d-flex gap-2">
+    <!-- Indicadores -->
+    <div class="carousel-indicators">
       <button 
         type="button" 
-        class="btn p-0 border-0 rounded-circle"
-        [class]="i === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'"
-        style="width: 12px; height: 12px;"
-        (click)="onIndicatorClick(i)"
+        data-bs-target="#introCarousel" 
+        [attr.data-bs-slide-to]="i"
+        [class.active]="i === 0"
         *ngFor="let slide of slides; let i = index">
       </button>
-    </div>
-  </div>
-
-  <!-- Icono E en la esquina inferior derecha (solo último slide) -->
-  <div class="position-absolute bottom-0 end-0 p-3" style="z-index: 1000;" *ngIf="currentSlide === slides.length - 1">
-    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
-         style="width: 40px; height: 40px;">
-      <span class="fw-bold">E</span>
     </div>
   </div>
 </div>
