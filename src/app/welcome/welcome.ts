@@ -1,11 +1,10 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 interface Cultivo {
   nombre: string;
   img: string;
   descripcion?: string;
-  temporada?: string;
 }
 
 interface Enfermedad {
@@ -22,7 +21,7 @@ interface Enfermedad {
   templateUrl: './welcome.html',
   styleUrls: ['./welcome.css']
 })
-export class WelcomeComponent implements OnInit, AfterViewInit {
+export class WelcomeComponent implements OnInit, AfterViewInit, OnDestroy {
   
   cultivos: Cultivo[] = [
     { 
@@ -44,7 +43,22 @@ export class WelcomeComponent implements OnInit, AfterViewInit {
       nombre: 'Algodón', 
       img: 'images/algodon-2.png',
       descripcion: 'Cultivo básico para textiles'
-    }
+    },
+    {
+      nombre: 'Mango',
+      img: 'images/mango.png',
+      descripcion: 'Fruta tropical dulce y jugosa' 
+    },
+    {
+      nombre: 'Papa',
+      img: 'images/papa.png',
+      descripcion: 'Cultivo de alto valor'
+    },
+    {
+      nombre: 'Tomate',
+      img: 'images/tomate.png',
+      descripcion: 'Cultivo de alto valor'
+    },
   ];
 
   enfermedades: Enfermedad[] = [
@@ -122,66 +136,92 @@ export class WelcomeComponent implements OnInit, AfterViewInit {
     }
   ];
 
-  // Carousels divididos para móvil
-  cultivosChunks: Cultivo[][] = [];
-  enfermedadesChunks: Enfermedad[][] = [];
+  private screenWidth = 0;
 
   ngOnInit(): void {
-    this.initializeCarouselData();
+    this.updateScreenWidth();
   }
 
   ngAfterViewInit(): void {
-    this.initializeBootstrapCarousels();
-  }
-
-  private initializeCarouselData(): void {
-    // Dividir cultivos en grupos de 2 para móvil
-    this.cultivosChunks = this.chunkArray(this.cultivos, 2);
-    
-    // Dividir enfermedades en grupos de 2 para móvil
-    this.enfermedadesChunks = this.chunkArray(this.enfermedades, 2);
-  }
-
-  private chunkArray<T>(array: T[], size: number): T[][] {
-    const chunks: T[][] = [];
-    for (let i = 0; i < array.length; i += size) {
-      chunks.push(array.slice(i, i + size));
+    // Capacitor maneja automáticamente los carousels de Bootstrap
+    if (typeof window !== 'undefined') {
+      this.updateScreenWidth();
+      window.addEventListener('resize', () => this.updateScreenWidth());
     }
+  }
+
+  private updateScreenWidth(): void {
+    if (typeof window !== 'undefined') {
+      this.screenWidth = window.innerWidth;
+    }
+  }
+
+  // Determina cuántos elementos mostrar por slide según el ancho de pantalla
+  getCurrentSlideSize(): number {
+    if (this.screenWidth < 576) return 2;  // xs: 2 columnas
+    if (this.screenWidth < 768) return 3;  // sm: 3 columnas  
+    if (this.screenWidth < 992) return 4;  // md: 4 columnas
+    if (this.screenWidth < 1200) return 5; // lg: 5 columnas
+    return 6; // xl: 6 columnas
+  }
+
+  // Divide las enfermedades en chunks dinámicos
+  getEnfermedadesChunks(): Enfermedad[][] {
+    const chunkSize = this.getCurrentSlideSize();
+    const chunks: Enfermedad[][] = [];
+    
+    for (let i = 0; i < this.enfermedades.length; i += chunkSize) {
+      chunks.push(this.enfermedades.slice(i, i + chunkSize));
+    }
+    
     return chunks;
   }
 
-  private initializeBootstrapCarousels(): void {
-    // Inicializar carousels de Bootstrap si es necesario
-    if (typeof window !== 'undefined') {
-      // Verificar si Bootstrap está disponible
-      const bootstrap = (window as any).bootstrap;
-      if (bootstrap) {
-        // Los carousels se inicializan automáticamente con data-bs-ride="carousel"
-        console.log('Bootstrap carousels initialized');
-      }
+  // Divide los cultivos en chunks dinámicos
+  getCultivosChunks(): Cultivo[][] {
+    const chunkSize = this.getCurrentSlideSize();
+    const chunks: Cultivo[][] = [];
+    
+    for (let i = 0; i < this.cultivos.length; i += chunkSize) {
+      chunks.push(this.cultivos.slice(i, i + chunkSize));
     }
+    
+    return chunks;
+  }
+
+  // TrackBy functions para optimizar performance
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  trackByEnfermedad(index: number, enfermedad: Enfermedad): string {
+    return enfermedad.nombre;
+  }
+
+  trackByCultivo(index: number, cultivo: Cultivo): string {
+    return cultivo.nombre;
   }
 
   // Métodos para manejar clicks en las tarjetas
   onCultivoClick(cultivo: Cultivo): void {
     console.log('Cultivo seleccionado:', cultivo);
-    // Aquí puedes agregar la navegación a la página de detalle del cultivo
-    // Por ejemplo: this.router.navigate(['/cultivo', cultivo.nombre.toLowerCase()]);
+    // Implementar navegación específica para Capacitor
+    // Ejemplo: this.router.navigate(['/cultivo', cultivo.nombre.toLowerCase()]);
   }
 
   onEnfermedadClick(enfermedad: Enfermedad): void {
     console.log('Enfermedad seleccionada:', enfermedad);
-    // Aquí puedes agregar la navegación a la página de detalle de la enfermedad
-    // Por ejemplo: this.router.navigate(['/enfermedad', enfermedad.nombre.toLowerCase()]);
+    // Implementar navegación específica para Capacitor
+    // Ejemplo: this.router.navigate(['/enfermedad', enfermedad.nombre.toLowerCase()]);
   }
 
   // Método para obtener clase CSS según severidad
   getSeveridadClass(severidad: string): string {
     switch (severidad) {
       case 'alta':
-        return 'text-danger';
+        return 'text-danger fw-bold';
       case 'media':
-        return 'text-warning';
+        return 'text-warning fw-semibold';
       case 'baja':
         return 'text-success';
       default:
@@ -193,25 +233,34 @@ export class WelcomeComponent implements OnInit, AfterViewInit {
   getTipoIcon(tipo: string): string {
     switch (tipo) {
       case 'plaga':
-        return 'bi-bug';
+        return 'bi bi-bug-fill text-danger';
       case 'hongo':
-        return 'bi-moisture';
+        return 'bi bi-moisture text-info';
       case 'enfermedad':
-        return 'bi-exclamation-triangle';
+        return 'bi bi-exclamation-triangle-fill text-warning';
       default:
-        return 'bi-question-circle';
+        return 'bi bi-question-circle text-muted';
     }
   }
 
-  // Método para manejar búsqueda
+  // Método para manejar búsqueda optimizado para móvil
   onSearchClick(): void {
     console.log('Búsqueda activada');
-    // Implementar lógica de búsqueda
+    // Implementar lógica de búsqueda para Capacitor
+    // Podría abrir un modal o navegar a una página de búsqueda
   }
 
-  // Método para manejar menú
+  // Método para manejar menú optimizado para móvil
   onMenuClick(): void {
     console.log('Menú activado');
-    // Implementar lógica del menú lateral o navegación
+    // Implementar lógica del menú para Capacitor
+    // Podría abrir un drawer/sidebar o menú contextual
+  }
+
+  // Cleanup para evitar memory leaks
+  ngOnDestroy(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('resize', () => this.updateScreenWidth());
+    }
   }
 }

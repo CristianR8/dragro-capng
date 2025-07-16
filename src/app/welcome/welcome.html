@@ -1,7 +1,7 @@
 <div class="min-vh-100 bg-light">
-  <!-- Navbar Mejorado -->
-  <nav class="navbar navbar-expand-lg shadow-sm fixed-top">
-    <div class="container">
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark bg-dark shadow-sm fixed-top">
+    <div class="container-fluid px-3">
       <div class="d-flex align-items-center">
         <button class="btn btn-link text-white p-0 me-3" type="button" (click)="onMenuClick()">
           <i class="fas fa-bars fs-4"></i>
@@ -16,17 +16,17 @@
     </div>
   </nav>
 
-  <!-- Hero Section Mejorado -->
-  <div class="hero-section">
-    <img src="images/paisaje.png" class="hero-image" />
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <div class="container text-center text-white">
-        <h1 class="hero-title mb-3">
-          Bienvenidos a <span class="text-success fw-bold">Dr. Agro</span>
+  <!-- Hero Section -->
+  <div class="hero-section position-relative overflow-hidden">
+    <img src="images/paisaje.png" class="position-absolute top-0 start-0 w-100 h-100" style="object-fit: cover; z-index: 1;" alt="Paisaje agrícola" />
+    <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100" style="z-index: 2;"></div>
+    <div class="position-absolute top-50 start-50 translate-middle w-100" style="z-index: 3;">
+      <div class="container text-center text-white px-3">
+        <h1 class="hero-title mb-3 fw-bold display-4 text-shadow">
+          Bienvenidos a <span class="text-success">Dr. Agro</span>
         </h1>
-        <p class="hero-subtitle mb-4">Simplifica tu gestión de cultivos con tecnología avanzada</p>
-        <button class="btn btn-success btn-lg px-4 py-2 rounded-pill">
+        <p class="hero-subtitle mb-4 fs-5 opacity-75">Simplifica tu gestión de cultivos con tecnología avanzada</p>
+        <button class="btn btn-success btn-lg px-4 py-2 rounded-pill shadow">
           Comenzar <i class="bi bi-arrow-right ms-2"></i>
         </button>
       </div>
@@ -34,236 +34,90 @@
   </div>
 
   <!-- Contenido Principal -->
-  <div class="container my-5 pt-4">
+  <div class="container-fluid px-3 my-5 pt-4">
+    
     <!-- Sección Cultivos -->
-    <div class="section-header mb-4">
-      <h2 class="fw-bold text-dark">🌱 Cultivos</h2>
-      <p class="text-muted fs-5">Selecciona el cultivo de tu interés</p>
+    <div class="text-center mb-4">
+      <h2 class="fw-bold text-dark h1 mb-2">🌱 Cultivos</h2>
+      <p class="text-muted fs-6">Selecciona el cultivo de tu interés</p>
     </div>
 
-    <!-- Carousel para móvil -->
-    <div class="d-lg-none mb-5">
+    <!-- Carousel Cultivos -->
+    <div class="mb-5">
       <div id="cultivosCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
-          <div class="carousel-item active">
-            <div class="row g-3">
-              <div class="col-6" *ngFor="let cultivo of cultivos.slice(0, 2)">
-                <div class="cultivo-card mobile-card" (click)="onCultivoClick(cultivo)">
-                  <div class="card-image-container">
-                    <img [src]="cultivo.img" class="card-img-top" />
-                    <div class="card-overlay"></div>
-                  </div>
-                  <div class="card-body text-center">
-                    <h6 class="card-title mb-0">{{ cultivo.nombre }}</h6>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="carousel-item">
-            <div class="row g-3">
-              <div class="col-6" *ngFor="let cultivo of cultivos.slice(2, 4)">
-                <div class="cultivo-card mobile-card" (click)="onCultivoClick(cultivo)">
-                  <div class="card-image-container">
-                    <img [src]="cultivo.img" class="card-img-top" />
-                    <div class="card-overlay"></div>
-                  </div>
-                  <div class="card-body text-center">
-                    <h6 class="card-title mb-0">{{ cultivo.nombre }}</h6>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#cultivosCarousel" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#cultivosCarousel" data-bs-slide="next">
-          <span class="carousel-control-next-icon"></span>
-        </button>
-        <div class="carousel-indicators">
-          <button type="button" data-bs-target="#cultivosCarousel" data-bs-slide-to="0" class="active"></button>
-          <button type="button" data-bs-target="#cultivosCarousel" data-bs-slide-to="1"></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Carousel para tablet y desktop -->
-    <div class="d-none d-lg-block mb-5">
-      <div id="cultivosDesktopCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-          <div class="carousel-item active">
-            <div class="row g-4">
-              <div class="col-lg-3 col-md-4 col-sm-6" *ngFor="let cultivo of cultivos.slice(0, 4)">
-                <div class="cultivo-card desktop-card" (click)="onCultivoClick(cultivo)">
-                  <div class="card-image-container">
-                    <img [src]="cultivo.img" class="card-img-top" />
-                    <div class="card-overlay"></div>
-                    <div class="card-action">
+          <!-- Slides dinámicos -->
+          <div class="carousel-item" *ngFor="let chunk of getCultivosChunks(); let i = index; trackBy: trackByIndex" 
+               [class.active]="i === 0">
+            <div class="row g-3 justify-content-center">
+              <div class="col-6 col-sm-4 col-md-3 col-lg-2" *ngFor="let cultivo of chunk; trackBy: trackByCultivo">
+                <div class="card h-100 shadow-sm border-0 card-hover" (click)="onCultivoClick(cultivo)">
+                  <div class="position-relative overflow-hidden rounded-top">
+                    <img [src]="cultivo.img" class="card-img-top" style="height: 120px; object-fit: cover;" [alt]="cultivo.nombre" />
+                    <div class="card-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+                    <div class="card-action position-absolute bottom-0 start-50 translate-middle-x mb-2 d-none d-sm-block">
                       <button class="btn btn-success btn-sm rounded-pill">
-                        <i class="bi bi-eye me-1"></i> Ver más
+                        <i class="bi bi-eye me-1"></i> Ver
                       </button>
                     </div>
                   </div>
-                  <div class="card-body text-center">
-                    <h5 class="card-title mb-2">{{ cultivo.nombre }}</h5>
-                    <p class="card-text text-muted small">{{ cultivo.descripcion }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="carousel-item" *ngIf="cultivos.length > 4">
-            <div class="row g-4">
-              <div class="col-lg-3 col-md-4 col-sm-6" *ngFor="let cultivo of cultivos.slice(4, 8)">
-                <div class="cultivo-card desktop-card" (click)="onCultivoClick(cultivo)">
-                  <div class="card-image-container">
-                    <img [src]="cultivo.img" class="card-img-top" />
-                    <div class="card-overlay"></div>
-                    <div class="card-action">
-                      <button class="btn btn-success btn-sm rounded-pill">
-                        <i class="bi bi-eye me-1"></i> Ver más
-                      </button>
-                    </div>
-                  </div>
-                  <div class="card-body text-center">
-                    <h5 class="card-title mb-2">{{ cultivo.nombre }}</h5>
-                    <p class="card-text text-muted small">{{ cultivo.descripcion }}</p>
+                  <div class="card-body text-center p-2">
+                    <h6 class="card-title mb-1 fw-semibold small">{{ cultivo.nombre }}</h6>
+                    <p class="card-text text-muted d-none d-sm-block" style="font-size: 0.75rem;">{{ cultivo.descripcion }}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#cultivosDesktopCarousel" data-bs-slide="prev">
+        
+        <!-- Controles del carousel -->
+        <button class="carousel-control-prev custom-carousel-control" type="button" data-bs-target="#cultivosCarousel" data-bs-slide="prev">
           <span class="carousel-control-prev-icon"></span>
         </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#cultivosDesktopCarousel" data-bs-slide="next">
+        <button class="carousel-control-next custom-carousel-control" type="button" data-bs-target="#cultivosCarousel" data-bs-slide="next">
           <span class="carousel-control-next-icon"></span>
         </button>
-        <div class="carousel-indicators">
-          <button type="button" data-bs-target="#cultivosDesktopCarousel" data-bs-slide-to="0" class="active"></button>
-          <button type="button" data-bs-target="#cultivosDesktopCarousel" data-bs-slide-to="1" *ngIf="cultivos.length > 4"></button>
+        
+        <!-- Indicadores dinámicos -->
+        <div class="carousel-indicators" style="bottom: -35px;">
+          <button type="button" data-bs-target="#cultivosCarousel" 
+                  [attr.data-bs-slide-to]="i" 
+                  *ngFor="let chunk of getCultivosChunks(); let i = index; trackBy: trackByIndex"
+                  [class.active]="i === 0"></button>
         </div>
       </div>
     </div>
 
     <!-- Sección Enfermedades y Plagas -->
-    <div class="section-header mb-4">
-      <h2 class="fw-bold text-dark">🐛 Enfermedades y Plagas</h2>
-      <p class="text-muted fs-5">Identifica y controla problemas en tus cultivos</p>
+    <div class="text-center mb-4">
+      <h2 class="fw-bold text-dark h1 mb-2">🐛 Enfermedades y Plagas</h2>
+      <p class="text-muted fs-6">Identifica y controla problemas en tus cultivos</p>
     </div>
 
-    <!-- Carousel para móvil - Enfermedades -->
-    <div class="d-lg-none mb-5">
+    <!-- Carousel Enfermedades -->
+    <div class="mb-5">
       <div id="enfermedadesCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
-          <div class="carousel-item active">
-            <div class="row g-3">
-              <div class="col-6" *ngFor="let enf of enfermedades.slice(0, 2)">
-                <div class="enfermedad-card mobile-card" (click)="onEnfermedadClick(enf)">
-                  <div class="card-image-container">
-                    <img [src]="enf.img" class="card-img-top" />
-                    <div class="card-overlay"></div>
-                  </div>
-                  <div class="card-body text-center">
-                    <h6 class="card-title mb-0">{{ enf.nombre }}</h6>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="carousel-item">
-            <div class="row g-3">
-              <div class="col-6" *ngFor="let enf of enfermedades.slice(2, 4)">
-                <div class="enfermedad-card mobile-card" (click)="onEnfermedadClick(enf)">
-                  <div class="card-image-container">
-                    <img [src]="enf.img" class="card-img-top" />
-                    <div class="card-overlay"></div>
-                  </div>
-                  <div class="card-body text-center">
-                    <h6 class="card-title mb-0">{{ enf.nombre }}</h6>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="carousel-item">
-            <div class="row g-3">
-              <div class="col-6" *ngFor="let enf of enfermedades.slice(4, 6)">
-                <div class="enfermedad-card mobile-card" (click)="onEnfermedadClick(enf)">
-                  <div class="card-image-container">
-                    <img [src]="enf.img" class="card-img-top" />
-                    <div class="card-overlay"></div>
-                  </div>
-                  <div class="card-body text-center">
-                    <h6 class="card-title mb-0">{{ enf.nombre }}</h6>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#enfermedadesCarousel" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon"></span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#enfermedadesCarousel" data-bs-slide="next">
-          <span class="carousel-control-next-icon"></span>
-        </button>
-        <div class="carousel-indicators">
-          <button type="button" data-bs-target="#enfermedadesCarousel" data-bs-slide-to="0" class="active"></button>
-          <button type="button" data-bs-target="#enfermedadesCarousel" data-bs-slide-to="1"></button>
-          <button type="button" data-bs-target="#enfermedadesCarousel" data-bs-slide-to="2"></button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Carousel para tablet y desktop - Enfermedades -->
-    <div class="d-none d-lg-block">
-      <div id="enfermedadesDesktopCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-          <div class="carousel-item active">
-            <div class="row g-4">
-              <div class="col-lg-2 col-md-3 col-sm-4" *ngFor="let enf of enfermedades.slice(0, 6)">
-                <div class="enfermedad-card desktop-card" (click)="onEnfermedadClick(enf)">
-                  <div class="card-image-container">
-                    <img [src]="enf.img" class="card-img-top" />
-                    <div class="card-overlay"></div>
-                    <div class="card-action">
+          <!-- Slides dinámicos -->
+          <div class="carousel-item" *ngFor="let chunk of getEnfermedadesChunks(); let i = index; trackBy: trackByIndex" 
+               [class.active]="i === 0">
+            <div class="row g-3 justify-content-center">
+              <div class="col-6 col-sm-4 col-md-3 col-lg-2" *ngFor="let enf of chunk; trackBy: trackByEnfermedad">
+                <div class="card h-100 shadow-sm border-0 card-hover" (click)="onEnfermedadClick(enf)">
+                  <div class="position-relative overflow-hidden rounded-top">
+                    <img [src]="enf.img" class="card-img-top" style="height: 100px; object-fit: cover;" [alt]="enf.nombre" />
+                    <div class="card-overlay position-absolute top-0 start-0 w-100 h-100"></div>
+                    <div class="card-action position-absolute bottom-0 start-50 translate-middle-x mb-2 d-none d-sm-block">
                       <button class="btn btn-warning btn-sm rounded-pill">
                         <i class="bi bi-info-circle me-1"></i> Info
                       </button>
                     </div>
                   </div>
-                  <div class="card-body text-center">
-                    <h6 class="card-title mb-1">{{ enf.nombre }}</h6>
-                    <p class="card-text text-muted small">
-                      <i [class]="getTipoIcon(enf.tipo || '')"></i>
-                      <span [class]="getSeveridadClass(enf.severidad || '')">{{ enf.tipo }}</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="carousel-item" *ngIf="enfermedades.length > 6">
-            <div class="row g-4">
-              <div class="col-lg-2 col-md-3 col-sm-4" *ngFor="let enf of enfermedades.slice(6, 12)">
-                <div class="enfermedad-card desktop-card" (click)="onEnfermedadClick(enf)">
-                  <div class="card-image-container">
-                    <img [src]="enf.img" class="card-img-top" />
-                    <div class="card-overlay"></div>
-                    <div class="card-action">
-                      <button class="btn btn-warning btn-sm rounded-pill">
-                        <i class="bi bi-info-circle me-1"></i> Info
-                      </button>
-                    </div>
-                  </div>
-                  <div class="card-body text-center">
-                    <h6 class="card-title mb-1">{{ enf.nombre }}</h6>
-                    <p class="card-text text-muted small">
-                      <i [class]="getTipoIcon(enf.tipo || '')"></i>
+                  <div class="card-body text-center p-2">
+                    <h6 class="card-title mb-1 fw-semibold" style="font-size: 0.8rem;">{{ enf.nombre }}</h6>
+                    <p class="card-text d-flex align-items-center justify-content-center" style="font-size: 0.7rem;">
+                      <i [class]="getTipoIcon(enf.tipo || '')" class="me-1"></i>
                       <span [class]="getSeveridadClass(enf.severidad || '')">{{ enf.tipo }}</span>
                     </p>
                   </div>
@@ -272,24 +126,30 @@
             </div>
           </div>
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#enfermedadesDesktopCarousel" data-bs-slide="prev">
+        
+        <!-- Controles del carousel -->
+        <button class="carousel-control-prev custom-carousel-control" type="button" data-bs-target="#enfermedadesCarousel" data-bs-slide="prev">
           <span class="carousel-control-prev-icon"></span>
         </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#enfermedadesDesktopCarousel" data-bs-slide="next">
+        <button class="carousel-control-next custom-carousel-control" type="button" data-bs-target="#enfermedadesCarousel" data-bs-slide="next">
           <span class="carousel-control-next-icon"></span>
         </button>
-        <div class="carousel-indicators">
-          <button type="button" data-bs-target="#enfermedadesDesktopCarousel" data-bs-slide-to="0" class="active"></button>
-          <button type="button" data-bs-target="#enfermedadesDesktopCarousel" data-bs-slide-to="1" *ngIf="enfermedades.length > 6"></button>
+        
+        <!-- Indicadores dinámicos -->
+        <div class="carousel-indicators" style="bottom: -35px;">
+          <button type="button" data-bs-target="#enfermedadesCarousel" 
+                  [attr.data-bs-slide-to]="i" 
+                  *ngFor="let chunk of getEnfermedadesChunks(); let i = index; trackBy: trackByIndex"
+                  [class.active]="i === 0"></button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Footer -->
-  <footer class="bg-dark text-dark py-4 mt-5">
-    <div class="container text-center">
-      <p class="mb-0">© 2025 Todos los derechos reservados. | AGROSAVIA</p>
+  <footer class="bg-dark text-white py-3 mt-5">
+    <div class="container-fluid text-center">
+      <p class="mb-0 small">© 2025 Todos los derechos reservados. | AGROSAVIA</p>
     </div>
   </footer>
 </div>
