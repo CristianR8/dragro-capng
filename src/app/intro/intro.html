@@ -8,6 +8,16 @@
         [class.active]="i === 0"
         *ngFor="let slide of slides; let i = index">
         
+        <!-- Botón Cerrar - Solo en el último slide -->
+        <div class="close-button" *ngIf="i === slides.length - 1">
+          <button 
+            type="button" 
+            class="btn-close-custom"
+            (click)="onContinue()">
+            Cerrar
+          </button>
+        </div>
+        
         <div class="slide-content">
           <!-- Imagen principal -->
           <div class="image-container">
