@@ -46,6 +46,10 @@ body, html {
   border-color: #dc3545;
 }
 
+.form-select.is-valid {
+  border-color: #28a745;
+}
+
 /* Form Labels */
 .form-label {
   font-weight: 600;
@@ -65,6 +69,10 @@ body, html {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2328a745' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
 }
 
+.form-select:disabled {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%236c757d' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
 /* Submit Button */
 .btn-success:hover:not(:disabled) {
   transform: translateY(-1px);
@@ -79,7 +87,7 @@ body, html {
 }
 
 /* Title */
-.h3 {
+.h4 {
   color: #333;
   font-size: 1.5rem;
 }
@@ -102,9 +110,43 @@ body, html {
   font-size: 0.875rem;
 }
 
+/* Loading indicators */
+.text-muted.small {
+  font-size: 0.8rem;
+  color: #6c757d !important;
+}
+
+.fa-spinner.fa-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Info messages */
+.fa-info-circle {
+  color: #17a2b8;
+}
+
+/* Debug alert styling */
+.alert-info {
+  font-size: 0.8rem;
+  border-color: #b8daff;
+  background-color: #e7f3ff;
+  color: #0c5460;
+}
+
+/* Loading states */
+.form-select[disabled] {
+  background-color: #f8f9fa;
+  opacity: 0.8;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
-  .h3 {
+  .h4 {
     font-size: 1.3rem;
   }
   
@@ -112,15 +154,24 @@ body, html {
     padding: 10px 14px;
     font-size: 0.95rem;
   }
+  
+  .text-muted.small {
+    font-size: 0.75rem;
+  }
 }
 
 @media (max-width: 576px) {
-  .h3 {
+  .h4 {
     font-size: 1.2rem;
   }
   
   .container-fluid {
     padding-left: 15px;
     padding-right: 15px;
+  }
+  
+  .form-select {
+    padding: 8px 12px;
+    font-size: 0.9rem;
   }
 }

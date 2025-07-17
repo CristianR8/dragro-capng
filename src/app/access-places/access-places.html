@@ -18,7 +18,7 @@
   <div class="flex-grow-1 d-flex flex-column bg-light" style="padding-top: 70px;">
     <div class="container-fluid px-4">
       <div class="row justify-content-center">
-        <div class="col-12">
+        <div class="col-12 col-md-6">
           
           <!-- Title Section -->
           <div class="text-center mb-4">
@@ -27,7 +27,7 @@
 
           <!-- Form Section -->
           <div class="bg-white rounded-3 shadow p-4 mb-4">
-            <form [formGroup]="placesForm" (ngSubmit)="onSubmit()">
+            <form (ngSubmit)="onSubmit()" #placesForm="ngForm">
               
               <!-- Departamento Field -->
               <div class="mb-4">
@@ -35,35 +35,29 @@
                 <select 
                   class="form-select form-select-lg border-2 rounded-2" 
                   id="departamento"
-                  formControlName="departamento"
-                  [class.is-invalid]="isFieldInvalid('departamento')"
-                  (change)="onDepartamentoChange()">
-                  <option value="">Selecciona un departamento</option>
-                  <option value="santander">Santander</option>
-                  <option value="antioquia">Antioquia</option>
-                  <option value="cundinamarca">Cundinamarca</option>
-                  <option value="valle">Valle del Cauca</option>
-                  <option value="atlantico">Atlántico</option>
-                  <option value="bolivar">Bolívar</option>
-                  <option value="caldas">Caldas</option>
-                  <option value="cauca">Cauca</option>
-                  <option value="cesar">Cesar</option>
-                  <option value="cordoba">Córdoba</option>
-                  <option value="huila">Huila</option>
-                  <option value="magdalena">Magdalena</option>
-                  <option value="meta">Meta</option>
-                  <option value="nariño">Nariño</option>
-                  <option value="norte_santander">Norte de Santander</option>
-                  <option value="quindio">Quindío</option>
-                  <option value="risaralda">Risaralda</option>
-                  <option value="sucre">Sucre</option>
-                  <option value="tolima">Tolima</option>
-                  <option value="otros">Otros</option>
+                  name="departamento"
+                  [(ngModel)]="departamento"
+                  (change)="onDepartamentoChange()"
+                  [disabled]="isLoadingDepartamentos"
+                  [class.is-invalid]="hasError('departamento')"
+                  [class.is-valid]="departamento && !hasError('departamento')">
+                  
+                  <option value="">
+                    {{ isLoadingDepartamentos ? 'Cargando departamentos...' : 'Selecciona un departamento' }}
+                  </option>
+                  
+                  <option *ngFor="let dept of departamentos" [value]="dept.id">
+                    {{ dept.nombre }}
+                  </option>
                 </select>
-                <div *ngIf="isFieldInvalid('departamento')" class="invalid-feedback">
-                  <small *ngIf="placesForm.get('departamento')?.errors?.['required']">
-                    El departamento es requerido
-                  </small>
+                
+                <div *ngIf="hasError('departamento')" class="invalid-feedback">
+                  {{ getError('departamento') }}
+                </div>
+                
+                <div *ngIf="isLoadingDepartamentos" class="text-muted small mt-1">
+                  <i class="fas fa-spinner fa-spin me-1"></i>
+                  Cargando departamentos desde el servidor...
                 </div>
               </div>
 
@@ -73,19 +67,36 @@
                 <select 
                   class="form-select form-select-lg border-2 rounded-2" 
                   id="ciudad"
-                  formControlName="ciudad"
-                  [disabled]="!selectedDepartamento"
-                  [class.is-invalid]="isFieldInvalid('ciudad')"
-                  (change)="onCiudadChange()">
-                  <option value="">Selecciona una ciudad</option>
-                  <option *ngFor="let ciudad of availableCities" [value]="ciudad.value">
-                    {{ ciudad.label }}
+                  name="ciudad"
+                  [(ngModel)]="ciudad"
+                  (change)="onCiudadChange()"
+                  [disabled]="!departamento || isLoadingCiudades"
+                  [class.is-invalid]="hasError('ciudad')"
+                  [class.is-valid]="ciudad && !hasError('ciudad')">
+                  
+                  <option value="">
+                    {{ isLoadingCiudades ? 'Cargando ciudades...' : 
+                       !departamento ? 'Selecciona primero un departamento' : 
+                       'Selecciona una ciudad' }}
+                  </option>
+                  
+                  <option *ngFor="let city of availableCities" [value]="city.id">
+                    {{ city.nombre }}
                   </option>
                 </select>
-                <div *ngIf="isFieldInvalid('ciudad')" class="invalid-feedback">
-                  <small *ngIf="placesForm.get('ciudad')?.errors?.['required']">
-                    La ciudad es requerida
-                  </small>
+                
+                <div *ngIf="hasError('ciudad')" class="invalid-feedback">
+                  {{ getError('ciudad') }}
+                </div>
+                
+                <div *ngIf="isLoadingCiudades" class="text-muted small mt-1">
+                  <i class="fas fa-spinner fa-spin me-1"></i>
+                  Cargando ciudades desde el servidor...
+                </div>
+                
+                <div *ngIf="!departamento && !isLoadingDepartamentos" class="text-muted small mt-1">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Selecciona un departamento para ver las ciudades disponibles
                 </div>
               </div>
 
@@ -94,12 +105,11 @@
                 <button 
                   type="submit" 
                   class="btn btn-success btn-lg rounded-pill fw-semibold px-5"
-                  [disabled]="!placesForm.valid || isSubmitting">
+                  [disabled]="!isFormValid || isSubmitting">
                   <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status"></span>
                   {{ isSubmitting ? 'Procesando...' : 'Finalizar' }}
                 </button>
               </div>
-
             </form>
           </div>
 
