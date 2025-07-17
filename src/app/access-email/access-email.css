@@ -1,0 +1,48 @@
+/* Eliminar scroll innecesario */
+body, html {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Imagen del logo */
+.img-fluid {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Checkbox personalizado para que se vea como en el diseño */
+.custom-checkbox {
+  width: 1.25em;
+  height: 1.25em;
+}
+
+.custom-checkbox:checked {
+  background-color: #28a745 !important;
+  border-color: #28a745 !important;
+}
+
+.custom-checkbox:focus {
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25) !important;
+}
+
+/* Efecto hover para el botón principal */
+.btn-success:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* Asegurar que el navbar no interfiera con botones */
+.navbar .btn-link:focus {
+  box-shadow: none;
+}
+
+/* Asegurar que no haya scroll vertical */
+.d-flex.flex-column.vh-100 {
+  height: 100vh !important;
+  overflow: hidden;
+}
+
+/* Contenedor principal sin padding extra */
+.flex-grow-1 {
+  overflow: hidden;
+}

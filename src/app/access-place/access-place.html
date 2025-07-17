@@ -1,0 +1,123 @@
+<!-- Navbar -->
+<nav class="navbar navbar-dark bg-dark fixed-top shadow-sm">
+  <div class="container-fluid px-3">
+    <div class="d-flex align-items-center">
+      <button class="btn btn-link text-white p-0 border-0 me-3" type="button" (click)="toggleMenu()">
+        <i class="fas fa-bars fs-5"></i>
+      </button>
+      <span class="navbar-brand mb-0 h1 fw-semibold">Dr. Agro</span>
+    </div>
+    <button class="btn btn-link text-white p-0" (click)="openSearch()">
+      <i class="fas fa-search fs-5"></i>
+    </button>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="d-flex flex-column vh-100">
+  <div class="flex-grow-1 d-flex flex-column bg-light" style="padding-top: 70px;">
+    <div class="container-fluid px-4">
+      <div class="row justify-content-center">
+        <div class="col-12">
+          
+          <!-- Title Section -->
+          <div class="text-center mb-4">
+            <h1 class="h2 fw-bold text-dark mb-0">¿Hablamos más de ti?</h1>
+          </div>
+
+          <!-- Form Section -->
+          <div class="bg-white rounded-3 shadow p-4 mb-4">
+            <form [formGroup]="placesForm" (ngSubmit)="onSubmit()">
+              
+              <!-- Departamento Field -->
+              <div class="mb-4">
+                <label for="departamento" class="form-label fw-semibold text-dark">Departamento</label>
+                <select 
+                  class="form-select form-select-lg border-2 rounded-2" 
+                  id="departamento"
+                  formControlName="departamento"
+                  [class.is-invalid]="isFieldInvalid('departamento')"
+                  (change)="onDepartamentoChange()">
+                  <option value="">Selecciona un departamento</option>
+                  <option value="santander">Santander</option>
+                  <option value="antioquia">Antioquia</option>
+                  <option value="cundinamarca">Cundinamarca</option>
+                  <option value="valle">Valle del Cauca</option>
+                  <option value="atlantico">Atlántico</option>
+                  <option value="bolivar">Bolívar</option>
+                  <option value="caldas">Caldas</option>
+                  <option value="cauca">Cauca</option>
+                  <option value="cesar">Cesar</option>
+                  <option value="cordoba">Córdoba</option>
+                  <option value="huila">Huila</option>
+                  <option value="magdalena">Magdalena</option>
+                  <option value="meta">Meta</option>
+                  <option value="nariño">Nariño</option>
+                  <option value="norte_santander">Norte de Santander</option>
+                  <option value="quindio">Quindío</option>
+                  <option value="risaralda">Risaralda</option>
+                  <option value="sucre">Sucre</option>
+                  <option value="tolima">Tolima</option>
+                  <option value="otros">Otros</option>
+                </select>
+                <div *ngIf="isFieldInvalid('departamento')" class="invalid-feedback">
+                  <small *ngIf="placesForm.get('departamento')?.errors?.['required']">
+                    El departamento es requerido
+                  </small>
+                </div>
+              </div>
+
+              <!-- Ciudad Field -->
+              <div class="mb-4">
+                <label for="ciudad" class="form-label fw-semibold text-dark">Ciudad</label>
+                <select 
+                  class="form-select form-select-lg border-2 rounded-2" 
+                  id="ciudad"
+                  formControlName="ciudad"
+                  [disabled]="!selectedDepartamento"
+                  [class.is-invalid]="isFieldInvalid('ciudad')"
+                  (change)="onCiudadChange()">
+                  <option value="">Selecciona una ciudad</option>
+                  <option *ngFor="let ciudad of availableCities" [value]="ciudad.value">
+                    {{ ciudad.label }}
+                  </option>
+                </select>
+                <div *ngIf="isFieldInvalid('ciudad')" class="invalid-feedback">
+                  <small *ngIf="placesForm.get('ciudad')?.errors?.['required']">
+                    La ciudad es requerida
+                  </small>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="d-grid">
+                <button 
+                  type="submit" 
+                  class="btn btn-success btn-lg rounded-pill fw-semibold px-5"
+                  [disabled]="!placesForm.valid || isSubmitting">
+                  <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  {{ isSubmitting ? 'Procesando...' : 'Finalizar' }}
+                </button>
+              </div>
+
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Footer -->
+  <footer class="bg-white border-top py-2 mt-auto">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12 text-center">
+          <p class="mb-0 text-muted small">
+            © 2025 Todos los derechos reservados. | <span class="fw-bold text-dark">AGROSAVIA</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

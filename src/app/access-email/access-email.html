@@ -1,0 +1,124 @@
+<!-- Navbar -->
+<nav class="navbar navbar-dark bg-dark fixed-top shadow-sm">
+  <div class="container-fluid px-3">
+    <div class="d-flex align-items-center">
+      <button class="btn btn-link text-white p-0 border-0 me-3" type="button" (click)="toggleMenu()">
+        <i class="fas fa-bars fs-5"></i>
+      </button>
+      <span class="navbar-brand mb-0 h1 fw-semibold">Dr. Agro</span>
+    </div>
+    <button class="btn btn-link text-white p-0" (click)="openSearch()">
+      <i class="fas fa-search fs-5"></i>
+    </button>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="d-flex flex-column vh-100">
+  <div class="flex-grow-1 d-flex flex-column bg-light" style="padding-top: 70px;">
+    <div class="container-fluid px-4">
+      <div class="row justify-content-center">
+        <div class="col-12">
+          
+          <!-- Logo Section -->
+          <div class="text-center mb-4">
+            <img 
+              src="/images/Logotipo-DR-AGRO-Color.png" 
+              alt="Dr. Agro" 
+              class="img-fluid" 
+              style="max-height: 120px;">
+            <p class="text-muted mb-0 mt-2">Un aliado para el campo colombiano</p>
+          </div>
+
+          <!-- Divider -->
+          <hr class="border-2 opacity-25 my-3">
+
+          <!-- Form Section -->
+          <div class="bg-white rounded-3 shadow p-4">
+            <h2 class="h4 text-center mb-4 fw-semibold text-dark">¿Háblanos de de ti?</h2>
+            
+            <form (ngSubmit)="onSubmit()" #emailForm="ngForm">
+              
+              <!-- Email Field -->
+              <div class="mb-3">
+                <label for="email" class="form-label fw-semibold text-dark">Correo electrónico</label>
+                <input 
+                  type="email" 
+                  class="form-control form-control-lg border-2 rounded-2" 
+                  id="email"
+                  name="email"
+                  [(ngModel)]="email"
+                  placeholder="Escribe tu correo electrónico."
+                  (input)="onEmailChange()"
+                  [class.is-invalid]="hasError('email')"
+                  [class.is-valid]="email && email.includes('@') && !hasError('email')">
+                <div *ngIf="hasError('email')" class="invalid-feedback">
+                  {{ getError('email') }}
+                </div>
+              </div>
+
+              <!-- Terms Checkbox -->
+              <div class="form-check mb-2">
+                <input 
+                  class="form-check-input border-2 custom-checkbox" 
+                  type="checkbox" 
+                  id="termsAccepted"
+                  name="termsAccepted"
+                  [(ngModel)]="termsAccepted"
+                  (change)="onTermsChange()">
+                <label class="form-check-label text-dark fw-normal" for="termsAccepted">
+                  Aceptas nuestros términos de uso.
+                </label>
+                <div *ngIf="hasError('terms')" class="text-danger small mt-1">
+                  {{ getError('terms') }}
+                </div>
+              </div>
+
+              <!-- Privacy Policy Checkbox -->
+              <div class="form-check mb-3">
+                <input 
+                  class="form-check-input border-2 custom-checkbox" 
+                  type="checkbox" 
+                  id="privacyAccepted"
+                  name="privacyAccepted"
+                  [(ngModel)]="privacyAccepted"
+                  (change)="onPrivacyChange()">
+                <label class="form-check-label text-dark fw-normal" for="privacyAccepted">
+                  Aceptas nuestra política de privacidad.
+                </label>
+                <div *ngIf="hasError('privacy')" class="text-danger small mt-1">
+                  {{ getError('privacy') }}
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="d-grid">
+                <button 
+                  type="submit" 
+                  class="btn btn-success btn-lg rounded-pill fw-semibold px-5"
+                  [disabled]="!isFormValid || isSubmitting">
+                  <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                  {{ isSubmitting ? 'Procesando...' : 'Empezar' }}
+                </button>
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Footer -->
+  <footer class="bg-white border-top py-2 mt-auto">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12 text-center">
+          <p class="mb-0 text-muted small">
+            © 2025 Todos los derechos reservados. | <span class="fw-bold text-dark">AGROSAVIA</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

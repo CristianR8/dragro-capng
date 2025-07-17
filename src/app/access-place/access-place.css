@@ -1,0 +1,126 @@
+/* Eliminar scroll innecesario */
+body, html {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Asegurar que no haya scroll vertical */
+.d-flex.flex-column.vh-100 {
+  height: 100vh !important;
+  overflow: hidden;
+}
+
+/* Contenedor principal sin padding extra */
+.flex-grow-1 {
+  overflow: hidden;
+}
+
+/* Asegurar que el navbar no interfiera con botones */
+.navbar .btn-link:focus {
+  box-shadow: none;
+}
+
+/* Form Controls */
+.form-select {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: white;
+  color: #333;
+}
+
+.form-select:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.form-select:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.form-select.is-invalid {
+  border-color: #dc3545;
+}
+
+/* Form Labels */
+.form-label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+/* Select arrow styling */
+.form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23333' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+}
+
+.form-select:focus {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2328a745' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+/* Submit Button */
+.btn-success:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Title */
+.h3 {
+  color: #333;
+  font-size: 1.5rem;
+}
+
+/* Form Section */
+.bg-white.rounded-3.shadow {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Error Messages */
+.invalid-feedback {
+  display: block;
+  margin-top: 5px;
+}
+
+.invalid-feedback small {
+  color: #dc3545;
+  font-size: 0.875rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .h3 {
+    font-size: 1.3rem;
+  }
+  
+  .form-select {
+    padding: 10px 14px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .h3 {
+    font-size: 1.2rem;
+  }
+  
+  .container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}

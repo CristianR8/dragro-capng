@@ -1,0 +1,127 @@
+/* Eliminar scroll innecesario */
+body, html {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Asegurar que no haya scroll vertical */
+.d-flex.flex-column.vh-100 {
+  height: 100vh !important;
+  overflow: hidden;
+}
+
+/* Contenedor principal sin padding extra */
+.flex-grow-1 {
+  overflow: hidden;
+}
+
+/* Asegurar que el navbar no interfiera con botones */
+.navbar .btn-link:focus {
+  box-shadow: none;
+}
+
+/* User Cards */
+.user-card {
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: white;
+  min-height: 140px;
+}
+
+.user-card:hover {
+  border-color: #28a745;
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.2);
+  transform: translateY(-2px);
+}
+
+.user-card.selected {
+  border-color: #28a745 !important;
+  background-color: #f8fff8;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.user-card.selected::before {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background-color: #28a745;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* User Icons */
+.user-icon {
+  max-width: 60px;
+  max-height: 60px;
+  object-fit: contain;
+}
+
+/* User Labels */
+.user-label {
+  font-size: 0.9rem;
+  color: #333;
+  line-height: 1.2;
+  min-height: 2.4em;
+  display: flex;
+  align-items: center;
+}
+
+/* Continue Button */
+.btn-success:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Title */
+.h3 {
+  color: #333;
+  font-size: 1.5rem;
+}
+
+/* Grid spacing */
+.g-3 {
+  --bs-gutter-x: 1rem;
+  --bs-gutter-y: 1rem;
+}
+
+/* Card body padding adjustment */
+.user-card .card-body {
+  padding: 1.5rem 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .user-card {
+    min-height: 120px;
+  }
+  
+  .user-icon {
+    width: 50px !important;
+    height: 50px !important;
+  }
+  
+  .user-label {
+    font-size: 0.85rem;
+  }
+  
+  .h3 {
+    font-size: 1.3rem;
+  }
+}
