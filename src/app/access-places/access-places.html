@@ -32,24 +32,20 @@
               <!-- Departamento Field -->
               <div class="mb-4">
                 <label for="departamento" class="form-label fw-semibold text-dark">Departamento</label>
-                <select 
-                  class="form-select form-select-lg border-2 rounded-2" 
-                  id="departamento"
+                <ng-select 
+                  [items]="departamentos" 
                   name="departamento"
+                  bindLabel="nombre" 
+                  bindValue="id"
                   [(ngModel)]="departamento"
                   (change)="onDepartamentoChange()"
+                  [loading]="isLoadingDepartamentos"
                   [disabled]="isLoadingDepartamentos"
                   [class.is-invalid]="hasError('departamento')"
-                  [class.is-valid]="departamento && !hasError('departamento')">
-                  
-                  <option value="">
-                    {{ isLoadingDepartamentos ? 'Cargando departamentos...' : 'Selecciona un departamento' }}
-                  </option>
-                  
-                  <option *ngFor="let dept of departamentos" [value]="dept.id">
-                    {{ dept.nombre }}
-                  </option>
-                </select>
+                  [class.is-valid]="departamento && !hasError('departamento')"
+                  placeholder="Selecciona un departamento"
+                  [clearable]="false">
+                </ng-select>
                 
                 <div *ngIf="hasError('departamento')" class="invalid-feedback">
                   {{ getError('departamento') }}
@@ -57,33 +53,27 @@
                 
                 <div *ngIf="isLoadingDepartamentos" class="text-muted small mt-1">
                   <i class="fas fa-spinner fa-spin me-1"></i>
-                  Cargando departamentos desde el servidor...
+                  Cargando departamentos...
                 </div>
               </div>
 
               <!-- Ciudad Field -->
               <div class="mb-4">
                 <label for="ciudad" class="form-label fw-semibold text-dark">Ciudad</label>
-                <select 
-                  class="form-select form-select-lg border-2 rounded-2" 
-                  id="ciudad"
+                <ng-select 
+                  [items]="availableCities" 
                   name="ciudad"
+                  bindLabel="nombre" 
+                  bindValue="id"
                   [(ngModel)]="ciudad"
                   (change)="onCiudadChange()"
+                  [loading]="isLoadingCiudades"
                   [disabled]="!departamento || isLoadingCiudades"
                   [class.is-invalid]="hasError('ciudad')"
-                  [class.is-valid]="ciudad && !hasError('ciudad')">
-                  
-                  <option value="">
-                    {{ isLoadingCiudades ? 'Cargando ciudades...' : 
-                       !departamento ? 'Selecciona primero un departamento' : 
-                       'Selecciona una ciudad' }}
-                  </option>
-                  
-                  <option *ngFor="let city of availableCities" [value]="city.id">
-                    {{ city.nombre }}
-                  </option>
-                </select>
+                  [class.is-valid]="ciudad && !hasError('ciudad')"
+                  [placeholder]="getPlaceholderCiudad()"
+                  [clearable]="false">
+                </ng-select>
                 
                 <div *ngIf="hasError('ciudad')" class="invalid-feedback">
                   {{ getError('ciudad') }}

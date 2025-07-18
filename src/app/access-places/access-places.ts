@@ -3,24 +3,21 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
-import { Subject, takeUntil } from 'rxjs';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 @Component({
   selector: 'app-access-places',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule, HttpClientModule, NgSelectModule],
   templateUrl: './access-places.html',
   styleUrls: ['./access-places.css']
 })
 export class AccessPlacesComponent implements OnInit, OnDestroy {
-
-  // Subject para cancelar subscripciones
-  private destroy$ = new Subject<void>();
   
   // Flag para verificar si el componente está activo
   private isComponentActive = false;
 
-  // Inyección de dependencias traditional para asegurar compatibilidad
+  // Inyección de dependencias
   constructor(
     private router: Router,
     private http: HttpClient,
@@ -55,41 +52,41 @@ export class AccessPlacesComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isComponentActive = true;
-    
-    // Verificar que HttpClient esté disponible
     console.log('AccessPlaces: ngOnInit called');
-    console.log('HttpClient available:', !!this.http);
-    console.log('Component active:', this.isComponentActive);
     
-    // Inicializar inmediatamente sin setTimeout
+    // Inicializar componente
     this.initializeComponent();
     
-    // Cargar datos inmediatamente
-    this.loadDepartamentos();
+    // Cargar departamentos y ciudades al inicio
+    this.loadInitialData();
   }
 
   ngOnDestroy(): void {
     console.log('AccessPlaces component destroyed');
-    
-    // Marcar componente como inactivo
     this.isComponentActive = false;
-    
-    // Cancelar todas las subscripciones pendientes
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   /**
    * Inicializa el componente
    */
   private initializeComponent(): void {
-    console.log('AccessPlaces component initialized for Capacitor');
-    
-    // Limpiar estado inicial
+    console.log('AccessPlaces component initialized');
     this.clearFormData();
-    
-    // Forzar detección de cambios
     this.cdr.detectChanges();
+  }
+
+  /**
+   * Carga los datos iniciales (solo departamentos)
+   */
+  private async loadInitialData(): Promise<void> {
+    try {
+      // Solo cargar departamentos al inicio
+      // Las ciudades se cargarán cuando se seleccione un departamento
+      await this.loadDepartamentos();
+      
+    } catch (error) {
+      console.error('Error loading initial data:', error);
+    }
   }
 
   /**
@@ -110,30 +107,31 @@ export class AccessPlacesComponent implements OnInit, OnDestroy {
    * Carga los departamentos desde la API
    */
   private async loadDepartamentos(): Promise<void> {
+    if (this.isLoadingDepartamentos) {
+      return; // Evitar carga múltiple
+    }
+
     this.isLoadingDepartamentos = true;
     
-    // Definir headers fuera del try para que esté disponible en catch
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'ngrok-skip-browser-warning': 'true'
     });
     
     try {
-      // Probar con POST en lugar de GET
+      // Intentar con POST primero
       const response = await this.http.post<any>(this.API_DEPARTAMENTOS, {}, { headers }).toPromise();
       
       console.log('Raw API response for departamentos:', response);
       
       if (response && response.code === 1 && response.data && Array.isArray(response.data)) {
-        // Transformar la respuesta de la API al formato esperado
+        // Asegurar que todos los IDs sean strings
         this.departamentos = response.data.map((dept: any) => ({
-          id: dept.id.toString(),     // Convertir number a string
-          nombre: dept.name           // Usar 'name' de la API
+          id: dept.id ? dept.id.toString() : '',
+          nombre: dept.nombre || dept.name || ''
         }));
         
-        console.log('Departamentos transformed:', this.departamentos);
-        
-        // Forzar detección de cambios
+        console.log('Departamentos loaded and processed:', this.departamentos);
         this.cdr.detectChanges();
       } else {
         console.error('Invalid response structure for departamentos:', response);
@@ -144,30 +142,22 @@ export class AccessPlacesComponent implements OnInit, OnDestroy {
       console.error('Error loading departamentos with POST:', error);
       
       // Si POST falla, intentar con GET
-      console.log('POST failed, trying GET...');
       try {
         const getResponse = await this.http.get<any>(this.API_DEPARTAMENTOS, { headers }).toPromise();
         
-        console.log('Raw GET response for departamentos:', getResponse);
-        
         if (getResponse && getResponse.code === 1 && getResponse.data && Array.isArray(getResponse.data)) {
-          // Transformar la respuesta de la API al formato esperado
           this.departamentos = getResponse.data.map((dept: any) => ({
-            id: dept.id.toString(),     // Convertir number a string
-            nombre: dept.name           // Usar 'name' de la API
+            id: dept.id ? dept.id.toString() : '',
+            nombre: dept.nombre || dept.name || ''
           }));
-          
-          console.log('Departamentos transformed with GET:', this.departamentos);
-          
-          // Forzar detección de cambios
+          console.log('Departamentos loaded with GET:', this.departamentos);
           this.cdr.detectChanges();
         } else {
           throw new Error('GET also failed - invalid response structure');
         }
       } catch (getError) {
-        console.error('Both POST and GET failed:', getError);
-        this.handleApiError('Error al cargar departamentos');
-        this.loadFallbackDepartamentos();
+        console.error('Both POST and GET failed for departamentos:', getError);
+        this.handleApiError('Error cargando departamentos', 'departamentos');
       }
     } finally {
       this.isLoadingDepartamentos = false;
@@ -176,181 +166,201 @@ export class AccessPlacesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Carga las ciudades desde la API
+   * Carga las ciudades desde la API para un departamento específico
    */
-  private async loadCiudades(): Promise<void> {
+  private async loadCiudades(departamentoId?: string): Promise<void> {
+    if (this.isLoadingCiudades) {
+      return;
+    }
+
+    const deptId = departamentoId || this.departamento;
+    if (!deptId) {
+      console.log('No departamento provided, skipping ciudades load');
+      return;
+    }
+
     this.isLoadingCiudades = true;
+    console.log('=== STARTING CIUDADES LOAD ===');
+    console.log('Loading cities for departamento:', deptId);
     
-    // Definir headers fuera del try para que esté disponible en catch
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'ngrok-skip-browser-warning': 'true'
     });
     
+    // Intentar múltiples formatos de payload
+    const payloads = [
+      { departamento_id: parseInt(deptId) },
+      { departmentId: parseInt(deptId) },
+      { id: parseInt(deptId) },
+      { dept_id: parseInt(deptId) },
+      { departamento: parseInt(deptId) }
+    ];
+    
     try {
-      // Probar con POST en lugar de GET
-      const response = await this.http.post<any>(this.API_CIUDADES, {}, { headers }).toPromise();
-      
-      console.log('Raw API response for ciudades:', response);
-      
-      if (response && response.code === 1 && response.data && Array.isArray(response.data)) {
-        // Transformar la respuesta de la API al formato esperado
-        this.ciudades = response.data.map((city: any) => ({
-          id: city.id.toString(),                           // Convertir number a string
-          nombre: city.name,                                // Usar 'name' de la API
-          departamento_id: city.departmentId.toString()     // Convertir departmentId a string
-        }));
+      // Probar cada payload
+      for (let i = 0; i < payloads.length; i++) {
+        const payload = payloads[i];
+        console.log(`Trying payload ${i + 1}:`, payload);
         
-        console.log('Ciudades transformed:', this.ciudades);
-        
-        // Filtrar ciudades para el departamento seleccionado
-        this.filterCitiesForDepartamento();
-        
-        // Forzar detección de cambios
-        this.cdr.detectChanges();
-      } else {
-        console.error('Invalid response structure for ciudades:', response);
-        throw new Error('Invalid API response structure');
-      }
-      
-    } catch (error) {
-      console.error('Error loading ciudades with POST:', error);
-      
-      // Si POST falla, intentar con GET
-      console.log('POST failed, trying GET...');
-      try {
-        const getResponse = await this.http.get<any>(this.API_CIUDADES, { headers }).toPromise();
-        
-        console.log('Raw GET response for ciudades:', getResponse);
-        
-        if (getResponse && getResponse.code === 1 && getResponse.data && Array.isArray(getResponse.data)) {
-          // Transformar la respuesta de la API al formato esperado
-          this.ciudades = getResponse.data.map((city: any) => ({
-            id: city.id.toString(),                           // Convertir number a string
-            nombre: city.name,                                // Usar 'name' de la API
-            departamento_id: city.departmentId.toString()     // Convertir departmentId a string
-          }));
+        try {
+          const response = await this.http.post<any>(this.API_CIUDADES, payload, { headers }).toPromise();
+          console.log('Success with payload:', payload);
+          console.log('Raw API response for ciudades:', response);
           
-          console.log('Ciudades transformed with GET:', this.ciudades);
-          
-          // Filtrar ciudades para el departamento seleccionado
-          this.filterCitiesForDepartamento();
-          
-          // Forzar detección de cambios
-          this.cdr.detectChanges();
-        } else {
-          throw new Error('GET also failed - invalid response structure');
+          if (response && response.code === 1 && response.data && Array.isArray(response.data)) {
+            const ciudadesFromApi = response.data.map((city: any) => ({
+              id: city.id ? city.id.toString() : '',
+              nombre: city.name || city.nombre || '',
+              departamento_id: city.departmentId ? city.departmentId.toString() : 
+                             (city.departamento_id ? city.departamento_id.toString() : deptId)
+            }));
+            
+            console.log('Ciudades loaded and processed:', ciudadesFromApi);
+            this.availableCities = ciudadesFromApi;
+            
+            // Actualizar cache
+            if (this.ciudades.length === 0) {
+              this.ciudades = ciudadesFromApi;
+            } else {
+              this.ciudades = this.ciudades.filter(c => c.departamento_id !== deptId);
+              this.ciudades.push(...ciudadesFromApi);
+            }
+            
+            this.cdr.detectChanges();
+            return; // Éxito, salir del método
+          } else {
+            console.log('Invalid response structure, trying next payload...');
+          }
+        } catch (payloadError: any) {
+          console.log(`Payload ${i + 1} failed:`, payloadError.status, payloadError.statusText);
+          if (payloadError.status === 422 || payloadError.status === 400) {
+            continue; // Probar siguiente payload
+          } else {
+            throw payloadError; // Otro tipo de error, fallar inmediatamente
+          }
         }
-      } catch (getError) {
-        console.error('Both POST and GET failed:', getError);
-        this.handleApiError('Error al cargar ciudades');
-        this.loadFallbackCiudades();
       }
+      
+      // Si llegamos aquí, todos los payloads fallaron
+      throw new Error('All POST payloads failed');
+      
+    } catch (error: any) {
+      console.error('All POST attempts failed:', error);
+      
+      // Intentar con GET y diferentes formatos de parámetros
+      const getUrls = [
+        `${this.API_CIUDADES}?departamento_id=${deptId}`,
+        `${this.API_CIUDADES}?departmentId=${deptId}`,
+        `${this.API_CIUDADES}?id=${deptId}`,
+        `${this.API_CIUDADES}?dept_id=${deptId}`,
+        `${this.API_CIUDADES}?departamento=${deptId}`,
+        `${this.API_CIUDADES}/${deptId}`,
+        this.API_CIUDADES // Sin parámetros
+      ];
+      
+      for (let i = 0; i < getUrls.length; i++) {
+        const url = getUrls[i];
+        console.log(`Trying GET ${i + 1}:`, url);
+        
+        try {
+          const getResponse = await this.http.get<any>(url, { headers }).toPromise();
+          console.log('Success with GET URL:', url);
+          console.log('GET response:', getResponse);
+          
+          if (getResponse && getResponse.code === 1 && getResponse.data && Array.isArray(getResponse.data)) {
+            let ciudadesFromApi = getResponse.data.map((city: any) => ({
+              id: city.id ? city.id.toString() : '',
+              nombre: city.name || city.nombre || '',
+              departamento_id: city.departmentId ? city.departmentId.toString() : 
+                             (city.departamento_id ? city.departamento_id.toString() : deptId)
+            }));
+            
+            console.log('Ciudades loaded with GET:', ciudadesFromApi);
+            this.availableCities = ciudadesFromApi;
+            
+            if (this.ciudades.length === 0) {
+              this.ciudades = ciudadesFromApi;
+            } else {
+              this.ciudades = this.ciudades.filter(c => c.departamento_id !== deptId);
+              this.ciudades.push(...ciudadesFromApi);
+            }
+            
+            this.cdr.detectChanges();
+            return; // Éxito
+          }
+        } catch (getError: any) {
+          console.log(`GET ${i + 1} failed:`, getError.status, getError.statusText);
+          continue;
+        }
+      }
+      
+      // Si llegamos aquí, todo falló
+      console.error('All attempts to load cities failed');
+      this.handleApiError('No se pudieron cargar las ciudades', 'ciudades');
+      this.availableCities = [];
+      
     } finally {
       this.isLoadingCiudades = false;
+      console.log('=== CIUDADES LOAD FINISHED ===');
       this.cdr.detectChanges();
     }
   }
 
   /**
    * Filtra las ciudades para el departamento seleccionado
+   * (Este método se mantiene para compatibilidad, pero ahora las ciudades 
+   * vienen pre-filtradas de la API)
    */
   private filterCitiesForDepartamento(): void {
+    console.log('Filtering cities for departamento:', this.departamento);
+    console.log('Available cities before filter:', this.ciudades.length);
+    
     if (this.departamento && this.ciudades.length > 0) {
-      this.availableCities = this.ciudades.filter(ciudad => 
-        ciudad.departamento_id === this.departamento
-      );
-      console.log('Filtered cities for', this.departamento, ':', this.availableCities);
+      // Asegurar comparación de strings
+      const departamentoId = this.departamento.toString();
+      
+      this.availableCities = this.ciudades.filter(ciudad => {
+        const ciudadDeptId = ciudad.departamento_id ? ciudad.departamento_id.toString() : '';
+        const match = ciudadDeptId === departamentoId;
+        
+        if (match) {
+          console.log(`Ciudad ${ciudad.nombre} matches departamento ${departamentoId}`);
+        }
+        
+        return match;
+      });
+      
+      console.log('Filtered cities for departamento', departamentoId, ':', this.availableCities);
+      
+      // Si no hay ciudades disponibles, mostrar información de debug
+      if (this.availableCities.length === 0) {
+        console.warn('No cities found for departamento:', departamentoId);
+        console.log('Available departamento IDs in cities:', 
+          [...new Set(this.ciudades.map(c => c.departamento_id))]);
+      }
+      
     } else {
       this.availableCities = [];
+      console.log('No departamento selected or no cities loaded');
+    }
+    
+    // Si había una ciudad seleccionada pero ya no está disponible, limpiarla
+    if (this.ciudad && !this.availableCities.find(c => c.id === this.ciudad)) {
+      console.log('Clearing selected city as it is no longer available');
+      this.ciudad = '';
     }
   }
 
   /**
    * Maneja errores de la API
    */
-  private handleApiError(message: string): void {
-    console.error('API Error:', message);
+  private handleApiError(message: string, type: 'departamentos' | 'ciudades'): void {
+    console.error('API Error:', message, 'Type:', type);
+    
     // Aquí podrías mostrar un toast o notificación al usuario
-  }
-
-  /**
-   * Carga departamentos de respaldo si falla la API
-   */
-  private loadFallbackDepartamentos(): void {
-    this.departamentos = [
-      { id: '28', nombre: 'Santander' },
-      { id: '5', nombre: 'Antioquia' },
-      { id: '11', nombre: 'Cundinamarca' },
-      { id: '30', nombre: 'Valle del Cauca' },
-      { id: '4', nombre: 'Atlántico' },
-      { id: '8', nombre: 'Bolívar' },
-      { id: '9', nombre: 'Caldas' },
-      { id: '10', nombre: 'Cauca' },
-      { id: '12', nombre: 'Cesar' },
-      { id: '13', nombre: 'Córdoba' },
-      { id: '16', nombre: 'Huila' },
-      { id: '18', nombre: 'Magdalena' },
-      { id: '19', nombre: 'Meta' },
-      { id: '20', nombre: 'Nariño' },
-      { id: '21', nombre: 'Norte de Santander' },
-      { id: '24', nombre: 'Quindío' },
-      { id: '26', nombre: 'Risaralda' },
-      { id: '29', nombre: 'Sucre' },
-      { id: '31', nombre: 'Tolima' }
-    ];
+    // Por ejemplo, puedes usar una librería de notificaciones o mostrar un alert
     
-    console.log('Fallback departamentos loaded');
-    
-    // Forzar detección de cambios
-    this.cdr.detectChanges();
-  }
-
-  /**
-   * Carga ciudades de respaldo si falla la API
-   */
-  private loadFallbackCiudades(): void {
-    this.ciudades = [
-      // Santander (id: 28)
-      { id: '915', nombre: 'Bucaramanga', departamento_id: '28' },
-      { id: '916', nombre: 'Floridablanca', departamento_id: '28' },
-      { id: '917', nombre: 'Girón', departamento_id: '28' },
-      { id: '918', nombre: 'Piedecuesta', departamento_id: '28' },
-      { id: '919', nombre: 'Barrancabermeja', departamento_id: '28' },
-      
-      // Antioquia (id: 5)
-      { id: '76', nombre: 'Medellín', departamento_id: '5' },
-      { id: '77', nombre: 'Bello', departamento_id: '5' },
-      { id: '78', nombre: 'Itagüí', departamento_id: '5' },
-      { id: '79', nombre: 'Envigado', departamento_id: '5' },
-      { id: '80', nombre: 'Sabaneta', departamento_id: '5' },
-      
-      // Cundinamarca (id: 11)
-      { id: '149', nombre: 'Bogotá', departamento_id: '11' },
-      { id: '150', nombre: 'Soacha', departamento_id: '11' },
-      { id: '151', nombre: 'Chía', departamento_id: '11' },
-      { id: '152', nombre: 'Zipaquirá', departamento_id: '11' },
-      { id: '153', nombre: 'Facatativá', departamento_id: '11' },
-      
-      // Valle del Cauca (id: 30)
-      { id: '1129', nombre: 'Cali', departamento_id: '30' },
-      { id: '1130', nombre: 'Palmira', departamento_id: '30' },
-      { id: '1131', nombre: 'Buenaventura', departamento_id: '30' },
-      { id: '1132', nombre: 'Tuluá', departamento_id: '30' },
-      { id: '1133', nombre: 'Cartago', departamento_id: '30' },
-      
-      // Atlántico (id: 4)
-      { id: '51', nombre: 'Barranquilla', departamento_id: '4' },
-      { id: '52', nombre: 'Soledad', departamento_id: '4' },
-      { id: '53', nombre: 'Malambo', departamento_id: '4' },
-      { id: '54', nombre: 'Puerto Colombia', departamento_id: '4' },
-      { id: '55', nombre: 'Galapa', departamento_id: '4' }
-    ];
-    
-    this.filterCitiesForDepartamento();
-    console.log('Fallback ciudades loaded');
-    
-    // Forzar detección de cambios
     this.cdr.detectChanges();
   }
 
@@ -362,27 +372,17 @@ export class AccessPlacesComponent implements OnInit, OnDestroy {
     
     // Limpiar ciudad seleccionada
     this.ciudad = '';
+    this.availableCities = [];
     
     // Validar departamento
     this.validateDepartamento();
     
-    // Cargar ciudades si aún no están cargadas
-    if (this.ciudades.length === 0) {
-      this.loadCiudades();
-    } else {
-      this.filterCitiesForDepartamento();
+    // Cargar ciudades para el departamento seleccionado
+    if (this.departamento) {
+      this.loadCiudades(this.departamento);
     }
     
-    // Forzar múltiples detecciones de cambios
     this.cdr.detectChanges();
-    
-    setTimeout(() => {
-      this.cdr.detectChanges();
-    }, 50);
-    
-    setTimeout(() => {
-      this.cdr.markForCheck();
-    }, 100);
   }
 
   /**
@@ -391,13 +391,23 @@ export class AccessPlacesComponent implements OnInit, OnDestroy {
   onCiudadChange(): void {
     console.log('Ciudad changed to:', this.ciudad);
     this.validateCiudad();
-    
-    // Forzar detección de cambios
     this.cdr.detectChanges();
-    
-    setTimeout(() => {
-      this.cdr.detectChanges();
-    }, 50);
+  }
+
+  /**
+   * Obtiene el placeholder para el campo ciudad
+   */
+  getPlaceholderCiudad(): string {
+    if (this.isLoadingCiudades) {
+      return 'Cargando ciudades...';
+    }
+    if (!this.departamento) {
+      return 'Selecciona primero un departamento';
+    }
+    if (this.availableCities.length === 0) {
+      return 'No hay ciudades disponibles';
+    }
+    return 'Selecciona una ciudad';
   }
 
   /**
@@ -456,14 +466,6 @@ export class AccessPlacesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Obtiene el nombre del departamento seleccionado
-   */
-  get selectedDepartamentoName(): string {
-    const dept = this.departamentos.find(d => d.id === this.departamento);
-    return dept?.nombre || '';
-  }
-
-  /**
    * Obtiene el nombre de la ciudad seleccionada
    */
   get selectedCiudadName(): string {
@@ -487,7 +489,6 @@ export class AccessPlacesComponent implements OnInit, OnDestroy {
     try {
       const formData = {
         departamento: this.departamento,
-        departamentoName: this.selectedDepartamentoName,
         ciudad: this.ciudad,
         ciudadName: this.selectedCiudadName
       };
@@ -540,53 +541,6 @@ export class AccessPlacesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Limpia el formulario
-   */
-  clearForm(): void {
-    this.clearFormData();
-    this.cdr.detectChanges();
-  }
-
-  /**
-   * Llena el formulario para testing
-   */
-  fillFormForTest(): void {
-    // Asegurar que tengamos departamentos cargados
-    if (this.departamentos.length === 0) {
-      this.loadFallbackDepartamentos();
-    }
-    
-    if (this.departamentos.length > 0) {
-      // Seleccionar Santander por defecto (id: 28)
-      const santander = this.departamentos.find(d => d.nombre === 'Santander');
-      this.departamento = santander ? santander.id : this.departamentos[0].id;
-      
-      // Forzar detección de cambios
-      this.cdr.detectChanges();
-      
-      // Disparar el evento de cambio de departamento
-      this.onDepartamentoChange();
-      
-      // Esperar un poco y luego seleccionar una ciudad
-      setTimeout(() => {
-        if (this.availableCities.length > 0) {
-          // Seleccionar Bucaramanga por defecto
-          const bucaramanga = this.availableCities.find(c => c.nombre === 'Bucaramanga');
-          this.ciudad = bucaramanga ? bucaramanga.id : this.availableCities[0].id;
-          
-          // Forzar detección de cambios
-          this.cdr.detectChanges();
-          
-          // Disparar el evento de cambio de ciudad
-          this.onCiudadChange();
-        }
-      }, 200);
-    }
-    
-    console.log('Form filled for test');
-  }
-
-  /**
    * Maneja el toggle del menú
    */
   toggleMenu(): void {
@@ -598,6 +552,14 @@ export class AccessPlacesComponent implements OnInit, OnDestroy {
    */
   openSearch(): void {
     console.log('Search button clicked');
+  }
+
+  /**
+   * Limpia el formulario
+   */
+  clearForm(): void {
+    this.clearFormData();
+    this.cdr.detectChanges();
   }
 
   /**
@@ -618,13 +580,37 @@ export class AccessPlacesComponent implements OnInit, OnDestroy {
       ciudades: this.isLoadingCiudades,
       submitting: this.isSubmitting
     });
-    console.log('Selected names:', {
-      departamento: this.selectedDepartamentoName,
-      ciudad: this.selectedCiudadName
-    });
     
-    // Forzar detección de cambios para debug
+    // Debug específico para el filtrado
+    if (this.departamento) {
+      console.log('Cities for selected departamento:');
+      const filtered = this.ciudades.filter(ciudad => 
+        ciudad.departamento_id === this.departamento
+      );
+      console.log(filtered);
+    }
+    
     this.cdr.detectChanges();
+  }
+
+  /**
+   * Debug específico para ciudades - usar cuando no carguen las ciudades
+   */
+  debugCiudades(): void {
+    console.log('=== CIUDADES DEBUG ===');
+    console.log('Current departamento:', this.departamento);
+    console.log('Is loading ciudades:', this.isLoadingCiudades);
+    console.log('Available cities:', this.availableCities);
+    console.log('All cities in cache:', this.ciudades);
+    console.log('API URL:', this.API_CIUDADES);
+    
+    // Forzar recarga de ciudades si hay un departamento seleccionado
+    if (this.departamento && !this.isLoadingCiudades) {
+      console.log('Forcing reload of ciudades...');
+      this.loadCiudades(this.departamento);
+    } else if (!this.departamento) {
+      console.log('No departamento selected - select one first');
+    }
   }
 
   /**
@@ -640,10 +626,9 @@ export class AccessPlacesComponent implements OnInit, OnDestroy {
     this.departamento = '';
     this.ciudad = '';
     
-    // Forzar detección de cambios
     this.cdr.detectChanges();
     
-    // Recargar departamentos
+    // Recargar solo departamentos (las ciudades se cargarán al seleccionar departamento)
     this.loadDepartamentos();
     
     console.log('Data reload initiated');
