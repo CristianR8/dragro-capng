@@ -1,2 +1,12 @@
-<!-- Solo esto -->
+<!-- Contenido principal -->
 <router-outlet></router-outlet>
+
+<!-- Spinner global -->
+<app-spinner 
+  *ngIf="showSpinner$ | async"
+  [size]="(spinnerConfig$ | async)?.size || 'md'"
+  [color]="(spinnerConfig$ | async)?.color || 'success'"
+  [loadingText]="(spinnerConfig$ | async)?.message || 'Cargando...'"
+  [overlay]="(spinnerConfig$ | async)?.overlay || true"
+  [showText]="true">
+</app-spinner>

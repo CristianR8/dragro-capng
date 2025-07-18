@@ -1,5 +1,7 @@
 import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { SpinnerComponent } from '../components/spinner/spinner';
+import { SpinnerService } from '../services/spinner.service';
 
 interface Cultivo {
   nombre: string;
@@ -17,7 +19,7 @@ interface Enfermedad {
 @Component({
   selector: 'app-welcome',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SpinnerComponent],
   templateUrl: './welcome.html',
   styleUrls: ['./welcome.css']
 })
@@ -138,6 +140,8 @@ export class WelcomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private screenWidth = 0;
 
+  constructor(private spinnerService: SpinnerService) {}
+
   ngOnInit(): void {
     this.updateScreenWidth();
   }
@@ -148,6 +152,30 @@ export class WelcomeComponent implements OnInit, AfterViewInit, OnDestroy {
       this.updateScreenWidth();
       window.addEventListener('resize', () => this.updateScreenWidth());
     }
+    
+    // Activar spinner después de que la vista esté inicializada
+    this.loadInitialData();
+  }
+
+  // Método para mostrar spinner solo al entrar a la vista
+  private async loadInitialData(): Promise<void> {
+    // Usar setTimeout para evitar ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(async () => {
+      await this.spinnerService.showWhileLoading(
+        this.fetchInitialData(),
+        {
+          message: 'Cargando Dr. Agro...',
+          color: 'success',
+          overlay: true
+        }
+      );
+    }, 100);
+  }
+
+  // Método privado para simular carga de datos (2 segundos)
+  private async fetchInitialData(): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    console.log('Vista welcome cargada');
   }
 
   private updateScreenWidth(): void {
@@ -202,7 +230,7 @@ export class WelcomeComponent implements OnInit, AfterViewInit, OnDestroy {
     return cultivo.nombre;
   }
 
-  // Métodos para manejar clicks en las tarjetas
+  // Métodos para manejar clicks en las tarjetas (sin spinners adicionales)
   onCultivoClick(cultivo: Cultivo): void {
     console.log('Cultivo seleccionado:', cultivo);
     // Implementar navegación específica para Capacitor
@@ -243,14 +271,14 @@ export class WelcomeComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // Método para manejar búsqueda optimizado para móvil
+  // Método para manejar búsqueda (sin spinner)
   onSearchClick(): void {
     console.log('Búsqueda activada');
     // Implementar lógica de búsqueda para Capacitor
     // Podría abrir un modal o navegar a una página de búsqueda
   }
 
-  // Método para manejar menú optimizado para móvil
+  // Método para manejar menú (sin spinner)
   onMenuClick(): void {
     console.log('Menú activado');
     // Implementar lógica del menú para Capacitor
